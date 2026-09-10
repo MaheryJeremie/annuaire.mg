@@ -1,0 +1,958 @@
+{
+  "version": 2,
+  "updatedAt": "2026-09-10",
+  "region": "Analamanga",
+  "metiers": [
+    {
+      "id": 1,
+      "nom": "Plombier"
+    },
+    {
+      "id": 2,
+      "nom": "Électricien"
+    },
+    {
+      "id": 3,
+      "nom": "Ferblantier"
+    },
+    {
+      "id": 4,
+      "nom": "Maçon"
+    },
+    {
+      "id": 5,
+      "nom": "Menuisier"
+    },
+    {
+      "id": 6,
+      "nom": "Peintre"
+    },
+    {
+      "id": 7,
+      "nom": "Carreleur"
+    },
+    {
+      "id": 8,
+      "nom": "Soudeur"
+    },
+    {
+      "id": 9,
+      "nom": "Serrurier"
+    },
+    {
+      "id": 10,
+      "nom": "Charpentier"
+    },
+    {
+      "id": 11,
+      "nom": "Couvreur"
+    },
+    {
+      "id": 12,
+      "nom": "Vitrier"
+    },
+    {
+      "id": 13,
+      "nom": "Frigoriste"
+    },
+    {
+      "id": 14,
+      "nom": "Mécanicien auto"
+    },
+    {
+      "id": 15,
+      "nom": "Réparateur moto"
+    },
+    {
+      "id": 16,
+      "nom": "Réparateur électroménager"
+    },
+    {
+      "id": 17,
+      "nom": "Dépanneur informatique"
+    },
+    {
+      "id": 18,
+      "nom": "Jardinier"
+    },
+    {
+      "id": 19,
+      "nom": "Coiffeur"
+    },
+    {
+      "id": 20,
+      "nom": "Couturier"
+    },
+    {
+      "id": 21,
+      "nom": "Forgeron"
+    },
+    {
+      "id": 22,
+      "nom": "Vidangeur"
+    },
+    {
+      "id": 23,
+      "nom": "Déménageur"
+    },
+    {
+      "id": 24,
+      "nom": "Technicien climatisation"
+    },
+    {
+      "id": 25,
+      "nom": "Poseur de carrelage"
+    }
+  ],
+  "communes": [
+    {
+      "id": 1,
+      "nom": "Antananarivo-Renivohitra",
+      "district": "Antananarivo-Renivohitra",
+      "type": "Urbaine"
+    },
+    {
+      "id": 2,
+      "nom": "Ambohimangakely",
+      "district": "Antananarivo Avaradrano",
+      "type": "Rurale"
+    },
+    {
+      "id": 3,
+      "nom": "Ivato",
+      "district": "Antananarivo Avaradrano",
+      "type": "Urbaine"
+    },
+    {
+      "id": 4,
+      "nom": "Sabotsy Namehana",
+      "district": "Antananarivo Avaradrano",
+      "type": "Rurale"
+    },
+    {
+      "id": 5,
+      "nom": "Alasora",
+      "district": "Antananarivo Avaradrano",
+      "type": "Rurale"
+    },
+    {
+      "id": 6,
+      "nom": "Anosizato Andrefana",
+      "district": "Antananarivo Atsimondrano",
+      "type": "Urbaine"
+    },
+    {
+      "id": 7,
+      "nom": "Tanjombato",
+      "district": "Antananarivo Atsimondrano",
+      "type": "Urbaine"
+    },
+    {
+      "id": 8,
+      "nom": "Itaosy",
+      "district": "Antananarivo Atsimondrano",
+      "type": "Urbaine"
+    },
+    {
+      "id": 9,
+      "nom": "Ampitatafika",
+      "district": "Antananarivo Atsimondrano",
+      "type": "Urbaine"
+    },
+    {
+      "id": 10,
+      "nom": "Andranonahoatra",
+      "district": "Antananarivo Atsimondrano",
+      "type": "Rurale"
+    },
+    {
+      "id": 11,
+      "nom": "Ambohidratrimo",
+      "district": "Ambohidratrimo",
+      "type": "Urbaine"
+    },
+    {
+      "id": 12,
+      "nom": "Antehiroka",
+      "district": "Ambohidratrimo",
+      "type": "Rurale"
+    }
+  ],
+  "quartiers": [
+    {
+      "id": 101,
+      "communeId": 1,
+      "nom": "Analakely"
+    },
+    {
+      "id": 102,
+      "communeId": 1,
+      "nom": "Antaninarenina"
+    },
+    {
+      "id": 103,
+      "communeId": 1,
+      "nom": "Soarano"
+    },
+    {
+      "id": 104,
+      "communeId": 1,
+      "nom": "Tsaralalana"
+    },
+    {
+      "id": 105,
+      "communeId": 1,
+      "nom": "Ambohijatovo"
+    },
+    {
+      "id": 106,
+      "communeId": 1,
+      "nom": "Faravohitra"
+    },
+    {
+      "id": 107,
+      "communeId": 1,
+      "nom": "Ambatonakanga"
+    },
+    {
+      "id": 108,
+      "communeId": 1,
+      "nom": "Antsahavola"
+    },
+    {
+      "id": 109,
+      "communeId": 1,
+      "nom": "Behoririka"
+    },
+    {
+      "id": 110,
+      "communeId": 1,
+      "nom": "Anosy"
+    },
+    {
+      "id": 111,
+      "communeId": 1,
+      "nom": "Mahamasina"
+    },
+    {
+      "id": 112,
+      "communeId": 1,
+      "nom": "Ampefiloha"
+    },
+    {
+      "id": 113,
+      "communeId": 1,
+      "nom": "67 Ha"
+    },
+    {
+      "id": 114,
+      "communeId": 1,
+      "nom": "Isotry"
+    },
+    {
+      "id": 115,
+      "communeId": 1,
+      "nom": "Andavamamba"
+    },
+    {
+      "id": 116,
+      "communeId": 1,
+      "nom": "Ankazomanga"
+    },
+    {
+      "id": 117,
+      "communeId": 1,
+      "nom": "Antanimena"
+    },
+    {
+      "id": 118,
+      "communeId": 1,
+      "nom": "Besarety"
+    },
+    {
+      "id": 119,
+      "communeId": 1,
+      "nom": "Andravoahangy"
+    },
+    {
+      "id": 120,
+      "communeId": 1,
+      "nom": "Ankadifotsy"
+    },
+    {
+      "id": 121,
+      "communeId": 1,
+      "nom": "Ambohimiandra"
+    },
+    {
+      "id": 122,
+      "communeId": 1,
+      "nom": "Andraisoro"
+    },
+    {
+      "id": 123,
+      "communeId": 1,
+      "nom": "Ambatomaro"
+    },
+    {
+      "id": 124,
+      "communeId": 1,
+      "nom": "Ivandry"
+    },
+    {
+      "id": 125,
+      "communeId": 1,
+      "nom": "Alarobia"
+    },
+    {
+      "id": 126,
+      "communeId": 1,
+      "nom": "Ankorondrano"
+    },
+    {
+      "id": 127,
+      "communeId": 1,
+      "nom": "Andraharo"
+    },
+    {
+      "id": 128,
+      "communeId": 1,
+      "nom": "Manjakaray"
+    },
+    {
+      "id": 129,
+      "communeId": 1,
+      "nom": "Ambanidia"
+    },
+    {
+      "id": 130,
+      "communeId": 1,
+      "nom": "Andohalo"
+    },
+    {
+      "id": 131,
+      "communeId": 1,
+      "nom": "Ambohimanarina"
+    },
+    {
+      "id": 132,
+      "communeId": 1,
+      "nom": "Ambatobe"
+    },
+    {
+      "id": 133,
+      "communeId": 1,
+      "nom": "Nanisana"
+    },
+    {
+      "id": 134,
+      "communeId": 1,
+      "nom": "Anjanahary"
+    },
+    {
+      "id": 135,
+      "communeId": 1,
+      "nom": "Ambohipotsy"
+    },
+    {
+      "id": 136,
+      "communeId": 1,
+      "nom": "Ankadivato"
+    },
+    {
+      "id": 137,
+      "communeId": 1,
+      "nom": "Amparibe"
+    },
+    {
+      "id": 138,
+      "communeId": 1,
+      "nom": "Ambohipo"
+    },
+    {
+      "id": 139,
+      "communeId": 1,
+      "nom": "Tsiadana"
+    },
+    {
+      "id": 140,
+      "communeId": 1,
+      "nom": "Ampasanimalo"
+    },
+    {
+      "id": 141,
+      "communeId": 1,
+      "nom": "Anosibe"
+    },
+    {
+      "id": 142,
+      "communeId": 1,
+      "nom": "Soanierana"
+    },
+    {
+      "id": 143,
+      "communeId": 1,
+      "nom": "Antohomadinika"
+    },
+    {
+      "id": 144,
+      "communeId": 1,
+      "nom": "Andohatapenaka"
+    },
+    {
+      "id": 145,
+      "communeId": 1,
+      "nom": "Amboditsiry"
+    },
+    {
+      "id": 146,
+      "communeId": 1,
+      "nom": "Ampandrana"
+    },
+    {
+      "id": 147,
+      "communeId": 1,
+      "nom": "Ankadimbahoaka"
+    },
+    {
+      "id": 148,
+      "communeId": 1,
+      "nom": "Ambohimitsimbina"
+    },
+    {
+      "id": 149,
+      "communeId": 1,
+      "nom": "Mandrosoa"
+    },
+    {
+      "id": 150,
+      "communeId": 1,
+      "nom": "Ambohidahy"
+    },
+    {
+      "id": 151,
+      "communeId": 1,
+      "nom": "Antanimora"
+    },
+    {
+      "id": 152,
+      "communeId": 1,
+      "nom": "Ambohitrakely"
+    },
+    {
+      "id": 153,
+      "communeId": 1,
+      "nom": "Anjanahary Atsimo"
+    },
+    {
+      "id": 154,
+      "communeId": 1,
+      "nom": "Ankazomanga Avaratra"
+    },
+    {
+      "id": 155,
+      "communeId": 1,
+      "nom": "Ankazomanga Atsimo"
+    },
+    {
+      "id": 156,
+      "communeId": 1,
+      "nom": "Ambohidahy Avaratra"
+    },
+    {
+      "id": 157,
+      "communeId": 1,
+      "nom": "Antsahabe"
+    },
+    {
+      "id": 158,
+      "communeId": 1,
+      "nom": "Ambatovinaky"
+    },
+    {
+      "id": 159,
+      "communeId": 1,
+      "nom": "Ambohitsiroa"
+    },
+    {
+      "id": 160,
+      "communeId": 1,
+      "nom": "Anosibe Andrefana"
+    },
+    {
+      "id": 161,
+      "communeId": 1,
+      "nom": "Mahazoarivo"
+    },
+    {
+      "id": 201,
+      "communeId": 2,
+      "nom": "Ambohimangakely Centre"
+    },
+    {
+      "id": 202,
+      "communeId": 2,
+      "nom": "Ilafy"
+    },
+    {
+      "id": 203,
+      "communeId": 2,
+      "nom": "Ankadikely"
+    },
+    {
+      "id": 204,
+      "communeId": 2,
+      "nom": "Ambohimanambola"
+    },
+    {
+      "id": 205,
+      "communeId": 2,
+      "nom": "Talata"
+    },
+    {
+      "id": 206,
+      "communeId": 2,
+      "nom": "Ambohitrarahaba"
+    },
+    {
+      "id": 301,
+      "communeId": 3,
+      "nom": "Ivato Aéroport"
+    },
+    {
+      "id": 302,
+      "communeId": 3,
+      "nom": "Ivato Centre"
+    },
+    {
+      "id": 303,
+      "communeId": 3,
+      "nom": "Ambohibao"
+    },
+    {
+      "id": 304,
+      "communeId": 3,
+      "nom": "Talatamaty"
+    },
+    {
+      "id": 305,
+      "communeId": 3,
+      "nom": "Mandrosoa Ivato"
+    },
+    {
+      "id": 401,
+      "communeId": 4,
+      "nom": "Sabotsy Namehana Centre"
+    },
+    {
+      "id": 402,
+      "communeId": 4,
+      "nom": "Namehana"
+    },
+    {
+      "id": 403,
+      "communeId": 4,
+      "nom": "Ambohimiadana"
+    },
+    {
+      "id": 404,
+      "communeId": 4,
+      "nom": "Anosy Avaratra"
+    },
+    {
+      "id": 501,
+      "communeId": 5,
+      "nom": "Alasora Centre"
+    },
+    {
+      "id": 502,
+      "communeId": 5,
+      "nom": "Ambohimangakely Alasora"
+    },
+    {
+      "id": 503,
+      "communeId": 5,
+      "nom": "Ambohimalaza"
+    },
+    {
+      "id": 504,
+      "communeId": 5,
+      "nom": "Ankadivoribe"
+    },
+    {
+      "id": 601,
+      "communeId": 6,
+      "nom": "Anosizato"
+    },
+    {
+      "id": 602,
+      "communeId": 6,
+      "nom": "Andoharanofotsy"
+    },
+    {
+      "id": 603,
+      "communeId": 6,
+      "nom": "Anosizato Andrefana Centre"
+    },
+    {
+      "id": 604,
+      "communeId": 6,
+      "nom": "Soavina"
+    },
+    {
+      "id": 701,
+      "communeId": 7,
+      "nom": "Tanjombato Centre"
+    },
+    {
+      "id": 702,
+      "communeId": 7,
+      "nom": "Soavimasoandro"
+    },
+    {
+      "id": 703,
+      "communeId": 7,
+      "nom": "Ambohitrimanjaka Tanjombato"
+    },
+    {
+      "id": 704,
+      "communeId": 7,
+      "nom": "Anosizato Atsimo"
+    },
+    {
+      "id": 801,
+      "communeId": 8,
+      "nom": "Itaosy Centre"
+    },
+    {
+      "id": 802,
+      "communeId": 8,
+      "nom": "Ambohijanaka"
+    },
+    {
+      "id": 803,
+      "communeId": 8,
+      "nom": "Soavina Itaosy"
+    },
+    {
+      "id": 804,
+      "communeId": 8,
+      "nom": "Ambohimiandra Itaosy"
+    },
+    {
+      "id": 901,
+      "communeId": 9,
+      "nom": "Ampitatafika Centre"
+    },
+    {
+      "id": 902,
+      "communeId": 9,
+      "nom": "Anosizato Est"
+    },
+    {
+      "id": 903,
+      "communeId": 9,
+      "nom": "Ambohipo Ampitatafika"
+    },
+    {
+      "id": 1001,
+      "communeId": 10,
+      "nom": "Andranonahoatra Centre"
+    },
+    {
+      "id": 1002,
+      "communeId": 10,
+      "nom": "Ambohitrimanjaka"
+    },
+    {
+      "id": 1003,
+      "communeId": 10,
+      "nom": "Soanierana Andranonahoatra"
+    },
+    {
+      "id": 1101,
+      "communeId": 11,
+      "nom": "Ambohidratrimo Centre"
+    },
+    {
+      "id": 1102,
+      "communeId": 11,
+      "nom": "Talata Volonondry"
+    },
+    {
+      "id": 1103,
+      "communeId": 11,
+      "nom": "Anosibe Ambohidratrimo"
+    },
+    {
+      "id": 1104,
+      "communeId": 11,
+      "nom": "Ambohimanga"
+    },
+    {
+      "id": 1201,
+      "communeId": 12,
+      "nom": "Antehiroka Centre"
+    },
+    {
+      "id": 1202,
+      "communeId": 12,
+      "nom": "Ambohitrimanjaka Antehiroka"
+    },
+    {
+      "id": 1203,
+      "communeId": 12,
+      "nom": "Iarinarivo"
+    }
+  ],
+  "prestataires": [
+    {
+      "id": 10001,
+      "nom": "Rakoto Jean",
+      "telephone": "0342222222",
+      "metierId": 1,
+      "communeId": 1,
+      "description": "Interventions fuite et installation sanitaire.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "CERTIFIED",
+      "cinNumero": "101 012 345 678",
+      "quartierIds": [
+        125,
+        124
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 5000
+        },
+        {
+          "libelle": "Forfait fuite",
+          "montantAr": 25000
+        },
+        {
+          "libelle": "Heure",
+          "montantAr": 15000
+        }
+      ]
+    },
+    {
+      "id": 10002,
+      "nom": "Soa Ravelo",
+      "telephone": "0343333333",
+      "metierId": 1,
+      "communeId": 1,
+      "description": "Plomberie résidentielle.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "CERTIFIED",
+      "cinNumero": "101 223 334 445",
+      "quartierIds": [
+        125,
+        126
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 7000
+        },
+        {
+          "libelle": "Heure",
+          "montantAr": 18000
+        }
+      ]
+    },
+    {
+      "id": 10003,
+      "nom": "Hery Martin",
+      "telephone": "0344444444",
+      "metierId": 1,
+      "communeId": 1,
+      "description": "Dépannage rapide.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "PENDING",
+      "cinNumero": "101 334 445 556",
+      "quartierIds": [
+        125,
+        138
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 4500
+        },
+        {
+          "libelle": "Heure",
+          "montantAr": 12000
+        }
+      ]
+    },
+    {
+      "id": 10004,
+      "nom": "Toky Paul",
+      "telephone": "0345555555",
+      "metierId": 2,
+      "communeId": 1,
+      "description": "Installation électrique domestique.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "CERTIFIED",
+      "cinNumero": "101 445 556 667",
+      "quartierIds": [
+        114,
+        115
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 6000
+        },
+        {
+          "libelle": "Heure",
+          "montantAr": 20000
+        }
+      ]
+    },
+    {
+      "id": 10005,
+      "nom": "Lala Nirina",
+      "telephone": "0346666666",
+      "metierId": 3,
+      "communeId": 1,
+      "description": "Toiture et gouttières.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "PENDING",
+      "cinNumero": "101 556 667 778",
+      "quartierIds": [
+        101,
+        109
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 8000
+        },
+        {
+          "libelle": "Forfait",
+          "montantAr": 40000
+        }
+      ]
+    },
+    {
+      "id": 10006,
+      "nom": "Rasoa Marie",
+      "telephone": "0341111111",
+      "metierId": 1,
+      "communeId": 1,
+      "description": "Fuite, installation sanitaire.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "PENDING",
+      "cinNumero": "101 111 222 333",
+      "quartierIds": [
+        125
+      ],
+      "tarifs": [
+        {
+          "libelle": "Déplacement",
+          "montantAr": 5000
+        },
+        {
+          "libelle": "Forfait fuite",
+          "montantAr": 22000
+        }
+      ],
+      "linkedDemoUser": true
+    },
+    {
+      "id": 10007,
+      "nom": "Andry Faly",
+      "telephone": "0347777777",
+      "metierId": 14,
+      "communeId": 1,
+      "description": "Réparation voitures et utilitaires.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "CERTIFIED",
+      "cinNumero": "101 667 778 889",
+      "quartierIds": [
+        116,
+        117
+      ],
+      "tarifs": [
+        {
+          "libelle": "Diagnostic",
+          "montantAr": 10000
+        },
+        {
+          "libelle": "Heure",
+          "montantAr": 25000
+        }
+      ]
+    },
+    {
+      "id": 10008,
+      "nom": "Mamy Soa",
+      "telephone": "0348888888",
+      "metierId": 19,
+      "communeId": 1,
+      "description": "Salon à domicile, coupes hommes et femmes.",
+      "disponibleAujourdhui": true,
+      "certificationStatus": "CERTIFIED",
+      "cinNumero": "101 778 889 990",
+      "quartierIds": [
+        130,
+        111
+      ],
+      "tarifs": [
+        {
+          "libelle": "Coupe",
+          "montantAr": 8000
+        }
+      ]
+    }
+  ],
+  "usersDemo": [
+    {
+      "nom": "Agent Commune",
+      "telephone": "0320000000",
+      "password": "agent123",
+      "role": "AGENT",
+      "communeId": 1
+    },
+    {
+      "nom": "Rasoa Marie",
+      "telephone": "0341111111",
+      "password": "demo123",
+      "role": "PROVIDER",
+      "communeId": 1
+    }
+  ],
+  "avis": [
+    {
+      "prestataireId": 10001,
+      "auteurNom": "Voahirana",
+      "note": 5,
+      "commentaire": "Ponctuel et soigneux. Fuite réparée le jour même."
+    },
+    {
+      "prestataireId": 10001,
+      "auteurNom": "Mamy",
+      "note": 4,
+      "commentaire": "Bon travail, tarif conforme à l’affichage."
+    },
+    {
+      "prestataireId": 10002,
+      "auteurNom": "Haja",
+      "note": 5,
+      "commentaire": "Très professionnelle, je recommande."
+    },
+    {
+      "prestataireId": 10007,
+      "auteurNom": "Rivo",
+      "note": 4,
+      "commentaire": "Diagnostic clair, réparation rapide."
+    },
+    {
+      "prestataireId": 10008,
+      "auteurNom": "Lala",
+      "note": 5,
+      "commentaire": "Belle coupe, à l’heure au rendez-vous."
+    }
+  ]
+}
