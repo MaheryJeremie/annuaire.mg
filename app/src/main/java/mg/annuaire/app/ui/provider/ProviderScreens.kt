@@ -9,8 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,13 +19,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -62,6 +63,7 @@ import mg.annuaire.app.data.model.Prestataire
 import mg.annuaire.app.ui.components.DropdownField
 import mg.annuaire.app.ui.components.HintCard
 import mg.annuaire.app.ui.components.MetierSearchField
+import mg.annuaire.app.ui.components.MultiSelectDropdown
 import mg.annuaire.app.ui.components.PrestataireAvatar
 import mg.annuaire.app.ui.components.RatingRow
 import mg.annuaire.app.ui.components.SectionLabel
@@ -164,7 +166,9 @@ fun ProviderHomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+private data class TarifDraft(val libelle: String, val montant: String)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProviderProfileScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -182,8 +186,7 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
     var communeId by remember { mutableStateOf<Long?>(1L) }
     var selectedQuartiers by remember { mutableStateOf(setOf<Long>()) }
     var dispo by remember { mutableStateOf(true) }
-    var tarifLabel by remember { mutableStateOf("Déplacement") }
-    var tarifMontant by remember { mutableStateOf("5000") }
+    var tarifs by remember { mutableStateOf(listOf(TarifDraft("Déplacement", "5000"))) }
     var message by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -202,9 +205,9 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
         selectedMetier = m
         metierQuery = m?.nom.orEmpty()
         val detail = app.repository.getDetail(p.id)
-        detail?.tarifs?.firstOrNull()?.let {
-            tarifLabel = it.libelle
-            tarifMontant = it.montantAr.toString()
+        val existing = detail?.tarifs.orEmpty()
+        if (existing.isNotEmpty()) {
+            tarifs = existing.map { TarifDraft(it.libelle, it.montantAr.toString()) }
         }
     }
 
@@ -314,25 +317,15 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                     selectedQuartiers = emptySet()
                 }
             )
-            SectionLabel("Quartiers / fokontany où vous intervenez")
-            if (quartiers.isEmpty()) {
-                Text("Choisissez d’abord une commune.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                quartiers.forEach { q ->
-                    FilterChip(
-                        selected = q.id in selectedQuartiers,
-                        onClick = {
-                            selectedQuartiers = if (q.id in selectedQuartiers) {
-                                selectedQuartiers - q.id
-                            } else {
-                                selectedQuartiers + q.id
-                            }
-                        },
-                        label = { Text(q.nom) }
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(10.dp))
+            MultiSelectDropdown(
+                label = "Quartiers / fokontany",
+                options = quartiers.map { it.nom to it.id },
+                selectedIds = selectedQuartiers,
+                onChange = { selectedQuartiers = it },
+                placeholder = if (quartiers.isEmpty()) "Choisissez d’abord une commune" else "Sélectionner plusieurs quartiers",
+                emptyText = "Choisissez d’abord une commune."
+            )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = description,
@@ -342,22 +335,67 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                 minLines = 3,
                 shape = RoundedCornerShape(16.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = tarifLabel,
-                onValueChange = { tarifLabel = it },
-                label = { Text("Libellé tarif") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+            SectionLabel("Tarifs")
+            Text(
+                "Chaque ligne a un nom et un montant. Le bouton + en ajoute une autre.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = tarifMontant,
-                onValueChange = { tarifMontant = it.filter { c -> c.isDigit() } },
-                label = { Text("Montant (Ar)") },
+            tarifs.forEachIndexed { index, tarif ->
+                if (index > 0) Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = tarif.libelle,
+                            onValueChange = { value ->
+                                tarifs = tarifs.mapIndexed { i, item ->
+                                    if (i == index) item.copy(libelle = value) else item
+                                }
+                            },
+                            label = { Text("Nom du tarif") },
+                            placeholder = { Text("Ex. Déplacement, Heure…") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = tarif.montant,
+                            onValueChange = { value ->
+                                tarifs = tarifs.mapIndexed { i, item ->
+                                    if (i == index) item.copy(montant = value.filter { c -> c.isDigit() }) else item
+                                }
+                            },
+                            label = { Text("Montant (Ar)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+                    }
+                    if (tarifs.size > 1) {
+                        IconButton(
+                            onClick = { tarifs = tarifs.filterIndexed { i, _ -> i != index } }
+                        ) {
+                            Icon(Icons.Outlined.Delete, contentDescription = "Retirer ce tarif")
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { tarifs = tarifs + TarifDraft("", "") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp)
-            )
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ajouter un tarif")
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -388,7 +426,9 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                                     photoPath = photoPath
                                 ),
                                 quartierIds = selectedQuartiers.toList(),
-                                tarifs = listOf(tarifLabel to (tarifMontant.toIntOrNull() ?: 0))
+                                tarifs = tarifs
+                                    .filter { it.libelle.isNotBlank() }
+                                    .map { it.libelle.trim() to (it.montant.toIntOrNull() ?: 0) }
                             )
                             error = null
                             message = "Fiche enregistrée."
