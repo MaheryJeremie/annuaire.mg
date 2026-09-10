@@ -470,7 +470,7 @@ fun CertificationScreen(onBack: () -> Unit) {
             prestataire?.let { StatusBadge(it.certificationStatus, showInternalStatus = true) }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                "Pour le badge « Certifié », envoyez votre CIN. Les visiteurs ne voient pas ces photos — seulement l’agent communal.",
+                "Pour le badge « Certifié », envoyez votre CIN. Les visiteurs ne voient pas ces photos — seulement la commune.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -57,12 +57,12 @@ fun HelpScreen(
 
             HintCard(
                 title = "Badge « Certifié »",
-                body = "Le prestataire a envoyé son CIN (numéro + photos recto/verso). Un agent communal a contrôlé le dossier.",
+                body = "Le prestataire a envoyé son CIN (numéro + photos recto/verso). La commune a contrôlé le dossier.",
                 icon = Icons.Outlined.VerifiedUser
             )
             HintCard(
                 title = "Sans compte",
-                body = "La recherche est libre. Un compte sert uniquement aux prestataires (publier une fiche) et aux agents de commune.",
+                body = "La recherche est libre. Un compte sert uniquement aux prestataires, pour publier une fiche.",
                 icon = Icons.Outlined.Search
             )
             HintCard(
@@ -80,17 +80,11 @@ fun HelpScreen(
                 "5. Une fois le dossier accepté, le badge « Certifié » s’affiche sur votre fiche."
             )
 
-            SectionLabel("Si vous êtes agent communal")
-            HelpBlock(
-                "Connectez-vous avec l’accès commune.",
-                "Vous validez : les dossiers CIN, et les nouveaux noms de métiers proposés par les prestataires."
-            )
-
             SectionLabel("Questions fréquentes")
             Faq("Dois-je payer ?", "Non. L’annuaire est un service public de proximité.")
             Faq("Pourquoi mon métier n’apparaît pas tout de suite ?", "Un nouveau nom doit être validé par la commune, pour éviter les doublons et les fautes.")
-            Faq("Mes photos CIN sont-elles publiques ?", "Non. Seul l’agent communal les voit pour vérifier votre identité. Les visiteurs ne voient pas le CIN.")
-            Faq("La photo de profil est-elle publique ?", "Oui. Elle apparaît sur votre fiche. Les photos de CIN restent privées : seul l’agent communal les consulte.")
+            Faq("Mes photos CIN sont-elles publiques ?", "Non. Seule la commune les voit pour vérifier votre identité. Les visiteurs ne voient pas le CIN.")
+            Faq("La photo de profil est-elle publique ?", "Oui. Elle apparaît sur votre fiche. Les photos de CIN restent privées : seule la commune les consulte.")
             Faq("Puis-je laisser un avis ?", "Oui. Sur la fiche d’un prestataire, donnez une note de 1 à 5 et un commentaire.")
         }
     }

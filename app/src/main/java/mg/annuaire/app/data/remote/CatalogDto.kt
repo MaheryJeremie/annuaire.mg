@@ -42,6 +42,7 @@ data class PrestataireDto(
     val certificationStatus: String = "NONE",
     val cinNumero: String? = null,
     val patente: String? = null,
+    val commentaireAgent: String? = null,
     val quartierIds: List<Long> = emptyList(),
     val tarifs: List<TarifDto> = emptyList(),
     val linkedDemoUser: Boolean = false
@@ -69,4 +70,31 @@ data class AvisDto(
 
 data class PhotoUrlDto(
     val url: String? = null
+)
+
+data class DossierDto(
+    val id: Long = 0,
+    val nom: String = "",
+    val telephone: String = "",
+    val metierId: Long = 0,
+    val metierNom: String = "",
+    val communeId: Long = 0,
+    val quartiers: String = "",
+    val cinNumero: String? = null,
+    val status: String = "PENDING",
+    val commentaire: String? = null,
+    val updatedAt: Long = 0
+)
+
+data class MetierProposeDto(
+    val id: Long = 0,
+    val nom: String = "",
+    val status: String = "PENDING",
+    val proposePar: String = "",
+    val updatedAt: Long = 0
+)
+
+data class CertificationPatchDto(
+    val certificationStatus: String,
+    val commentaireAgent: String? = null
 )

@@ -909,13 +909,6 @@
   ],
   "usersDemo": [
     {
-      "nom": "Agent Commune",
-      "telephone": "0320000000",
-      "password": "agent123",
-      "role": "AGENT",
-      "communeId": 1
-    },
-    {
       "nom": "Rasoa Marie",
       "telephone": "0341111111",
       "password": "demo123",

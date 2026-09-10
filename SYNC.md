@@ -47,9 +47,9 @@ L’app appelle déjà `{baseUrl}catalog.json` → parfait.
 ### Option B
 Héberge `catalog.json` sur **Firebase Hosting** (fichier statique) et pointe `baseUrl` vers ton site Hosting.
 
-## Étape 4 — Règles de sécurité (MVP lecture seule)
+## Étape 4 — Règles de sécurité (MVP)
 
-Onglet **Règles** :
+Onglet **Règles** — lecture publique, écriture limitée aux nœuds utiles (photos, dossiers commune, métiers proposés) :
 
 ```json
 {
@@ -58,13 +58,22 @@ Onglet **Règles** :
     "photos": {
       ".write": true
     },
+    "dossiers": {
+      ".write": true
+    },
+    "metiers_proposes": {
+      ".write": true
+    },
+    "prestataires": {
+      ".write": true
+    },
     ".write": false
   }
 }
 ```
 
 → **Publier**.  
-(Plus tard : restreindre `.write` aux agents authentifiés.)
+Sans `dossiers` / `metiers_proposes` en écriture, le back-office commune ne pourra pas enregistrer une acceptation.
 
 ## Étape 5 — Récupérer l’URL
 
@@ -147,3 +156,45 @@ annuaire.cdn.cloudinaryPreset=VOTRE_PRESET_UNSIGNED
 ```
 
 5. **File → Sync Project with Gradle Files**, puis relance l’app.
+
+---
+
+## Back-office commune (application web séparée)
+
+L’application **Android** ne contient que deux espaces :
+
+| Espace | Qui | Où |
+|--------|-----|----|
+| Visiteur | tout le monde, sans compte | app mobile |
+| Prestataire | fiche + envoi du CIN | app mobile |
+| Commune | valider CIN et métiers | **outil web**, pas dans l’app |
+
+Ça reste aligné avec le cours (Compose, Navigation, MVVM, Room, sync) : la commune n’a pas besoin d’être un troisième rôle dans le téléphone.
+
+L’outil commune **n’est pas dans ce dépôt Git**. Il est à côté, dans le dossier du projet :
+
+```text
+Projet/
+  annuaire.mg/              ← app Android (ce repo)
+  annuaire-commune-web/     ← back-office HTML (hors Git)
+```
+
+### Ouvrir l’outil commune
+
+1. Aller dans `annuaire-commune-web`
+2. Ouvrir `index.html` dans un navigateur  
+   ou `python -m http.server 8080` puis [http://localhost:8080](http://localhost:8080)
+3. Connexion démo : **0320000000** / **agent123**
+4. **Publier les règles Firebase** (étape 4) si ce n’est pas déjà fait
+
+L’outil lit le catalogue en ligne, puis enregistre chaque décision dans Firebase :
+
+| Nœud | Rôle |
+|------|------|
+| `dossiers/{id}` | Acceptation / refus CIN |
+| `metiers_proposes/{id}` | Acceptation / refus d’un métier proposé |
+| `prestataires/{index}` | Mise à jour du statut dans le catalogue (si les règles l’autorisent) |
+
+Côté téléphone : un prestataire qui envoie son CIN pousse aussi le dossier en ligne. Au **prochain sync Wi‑Fi**, l’app lit `dossiers` et affiche le badge « Certifié ».
+
+URL Firebase de l’outil web : `annuaire-commune-web/config.js` (la même base que `annuaire.api.baseUrl`).

@@ -15,6 +15,9 @@ import mg.annuaire.app.data.model.Tarif
 import mg.annuaire.app.data.model.User
 import mg.annuaire.app.data.remote.AnnuaireApi
 import mg.annuaire.app.data.remote.CatalogDto
+import mg.annuaire.app.data.remote.CertificationPatchDto
+import mg.annuaire.app.data.remote.DossierDto
+import mg.annuaire.app.data.remote.MetierProposeDto
 import mg.annuaire.app.data.remote.NetworkModule
 
 /**
@@ -35,6 +38,7 @@ class CatalogSync(
         val catalog = resolveCatalog()
         applyCatalog(catalog.first)
         mergeRemotePhotos()
+        mergeRemoteDecisions()
         return Result.Ok(
             source = catalog.second,
             communes = catalog.first.communes.size,
@@ -48,7 +52,8 @@ class CatalogSync(
             return loadAssets("hors Wi‑Fi · catalogue local")
         }
         return try {
-            val remote = api.getCatalog()
+            val remote = loadRemoteCatalog()
+                ?: return loadAssets("Wi‑Fi · catalogue local")
             Log.i(TAG, "Sync Wi‑Fi OK (version=${remote.version})")
             remote to "Wi‑Fi · Firebase"
         } catch (e: Exception) {
@@ -56,6 +61,17 @@ class CatalogSync(
             loadAssets("Wi‑Fi · catalogue local")
         }
     }
+
+    private suspend fun loadRemoteCatalog(): CatalogDto? {
+        val nested = runCatching { api.getCatalog() }.getOrNull()
+        if (nested != null && hasCatalogData(nested)) return nested
+        val root = runCatching { api.getRootCatalog() }.getOrNull()
+        if (root != null && hasCatalogData(root)) return root
+        return null
+    }
+
+    private fun hasCatalogData(catalog: CatalogDto): Boolean =
+        catalog.prestataires.isNotEmpty() || catalog.communes.isNotEmpty()
 
     private fun loadAssets(label: String): Pair<CatalogDto, String> {
         return NetworkModule.loadCatalogFromAssets(context) to label
@@ -110,7 +126,8 @@ class CatalogSync(
                         description = p.description,
                         disponibleAujourdhui = p.disponibleAujourdhui,
                         certificationStatus = p.certificationStatus,
-                        cinNumero = p.cinNumero ?: p.patente
+                        cinNumero = p.cinNumero ?: p.patente,
+                        commentaireAgent = p.commentaireAgent
                     )
                 )
                 dao.clearQuartiers(p.id)
@@ -121,8 +138,21 @@ class CatalogSync(
                 dao.insertTarifs(
                     p.tarifs.map { Tarif(prestataireId = p.id, libelle = it.libelle, montantAr = it.montantAr) }
                 )
-            } else if (existing.userId == null && linkedUserId != null) {
-                dao.updatePrestataire(existing.copy(userId = linkedUserId))
+            } else {
+                var row = existing
+                if (row.userId == null && linkedUserId != null) {
+                    row = row.copy(userId = linkedUserId)
+                    dao.updatePrestataire(row)
+                }
+                if (p.certificationStatus == "CERTIFIED" || p.certificationStatus == "REJECTED") {
+                    dao.updatePrestataire(
+                        row.copy(
+                            certificationStatus = p.certificationStatus,
+                            cinNumero = p.cinNumero ?: p.patente ?: row.cinNumero,
+                            commentaireAgent = p.commentaireAgent ?: row.commentaireAgent
+                        )
+                    )
+                }
             }
         }
 
@@ -155,6 +185,85 @@ class CatalogSync(
                 dao.updatePrestataire(p.copy(photoPath = url))
             }
         }
+    }
+
+    private suspend fun mergeRemoteDecisions() {
+        if (!WifiChecker.isWifiConnected(context)) return
+        runCatching { api.getDossiers() }.getOrNull().orEmpty().forEach { (key, dto) ->
+            val id = dto.id.takeIf { it > 0 } ?: key.toLongOrNull() ?: return@forEach
+            if (dto.status.isBlank()) return@forEach
+            val p = dao.findPrestataireById(id)
+                ?: dto.telephone.takeIf { it.isNotBlank() }?.let { dao.findPrestataireByTelephone(it) }
+                ?: return@forEach
+            dao.updatePrestataire(
+                p.copy(
+                    certificationStatus = dto.status,
+                    commentaireAgent = dto.commentaire ?: p.commentaireAgent,
+                    cinNumero = dto.cinNumero ?: p.cinNumero
+                )
+            )
+        }
+        runCatching { api.getMetiersProposes() }.getOrNull().orEmpty().forEach { (key, dto) ->
+            val id = dto.id.takeIf { it > 0 } ?: key.toLongOrNull() ?: return@forEach
+            if (dto.status.isBlank()) return@forEach
+            val existing = dao.findMetierById(id)
+            if (existing != null) {
+                dao.updateMetier(existing.copy(status = dto.status))
+            } else if (dto.nom.isNotBlank()) {
+                dao.upsertMetier(
+                    Metier(
+                        id = id,
+                        nom = dto.nom,
+                        status = dto.status
+                    )
+                )
+            }
+        }
+    }
+
+    suspend fun publishDossier(prestataire: Prestataire) {
+        if (!WifiChecker.isOnline(context)) return
+        val dto = DossierDto(
+            id = prestataire.id,
+            nom = prestataire.nom,
+            telephone = prestataire.telephone,
+            metierId = prestataire.metierId,
+            metierNom = dao.metierName(prestataire.metierId).orEmpty(),
+            communeId = prestataire.communeId,
+            quartiers = dao.quartierNamesFor(prestataire.id).joinToString(", "),
+            cinNumero = prestataire.cinNumero,
+            status = prestataire.certificationStatus,
+            commentaire = prestataire.commentaireAgent,
+            updatedAt = System.currentTimeMillis()
+        )
+        runCatching { api.putDossier(prestataire.id, dto) }
+            .onFailure { Log.w(TAG, "Dossier en ligne: ${it.message}") }
+        val patch = CertificationPatchDto(
+            certificationStatus = prestataire.certificationStatus,
+            commentaireAgent = prestataire.commentaireAgent
+        )
+        val list = runCatching { api.getPrestataires() }.getOrNull()
+            ?: runCatching { api.getCatalogPrestataires() }.getOrNull()
+            ?: emptyList()
+        val index = list.indexOfFirst { it.id == prestataire.id }
+        if (index >= 0) {
+            runCatching { api.patchPrestataire(index, patch) }
+                .recoverCatching { api.patchCatalogPrestataire(index, patch) }
+                .onFailure { Log.w(TAG, "Catalogue prestataire: ${it.message}") }
+        }
+    }
+
+    suspend fun publishMetierPropose(metier: Metier, proposePar: String) {
+        if (!WifiChecker.isOnline(context)) return
+        val dto = MetierProposeDto(
+            id = metier.id,
+            nom = metier.nom,
+            status = metier.status,
+            proposePar = proposePar,
+            updatedAt = System.currentTimeMillis()
+        )
+        runCatching { api.putMetierPropose(metier.id, dto) }
+            .onFailure { Log.w(TAG, "Métier proposé en ligne: ${it.message}") }
     }
 
     companion object {

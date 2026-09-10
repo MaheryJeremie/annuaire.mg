@@ -106,6 +106,9 @@ interface AnnuaireDao {
     @Query("SELECT * FROM prestataires WHERE id = :id LIMIT 1")
     suspend fun findPrestataireById(id: Long): Prestataire?
 
+    @Query("SELECT * FROM prestataires WHERE telephone = :telephone LIMIT 1")
+    suspend fun findPrestataireByTelephone(telephone: String): Prestataire?
+
     @Query("SELECT nom FROM metiers WHERE id = :id LIMIT 1")
     suspend fun metierName(id: Long): String?
 
