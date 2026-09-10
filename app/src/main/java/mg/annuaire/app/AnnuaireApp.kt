@@ -13,12 +13,15 @@ import mg.annuaire.app.data.remote.NetworkModule
 import mg.annuaire.app.data.remote.PhotoCdn
 import mg.annuaire.app.data.repository.AnnuaireRepository
 import mg.annuaire.app.data.session.SessionStore
+import mg.annuaire.app.data.session.SettingsStore
 import mg.annuaire.app.data.sync.CatalogSync
 
 class AnnuaireApp : Application() {
     lateinit var repository: AnnuaireRepository
         private set
     lateinit var sessionStore: SessionStore
+        private set
+    lateinit var settingsStore: SettingsStore
         private set
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -30,10 +33,11 @@ class AnnuaireApp : Application() {
         super.onCreate()
         val db = AnnuaireDatabase.getInstance(this)
         val api = NetworkModule.createApi()
-        val sync = CatalogSync(this, db.dao(), api)
-        val photoCdn = PhotoCdn(this, api, NetworkModule.createHttpClient())
-        repository = AnnuaireRepository(db.dao(), sync, photoCdn)
         sessionStore = SessionStore(this)
+        settingsStore = SettingsStore(this)
+        val sync = CatalogSync(this, db.dao(), api, settingsStore)
+        val photoCdn = PhotoCdn(this, api, NetworkModule.createHttpClient(), settingsStore)
+        repository = AnnuaireRepository(db.dao(), sync, photoCdn)
 
         appScope.launch {
             when (val result = repository.syncCatalog()) {

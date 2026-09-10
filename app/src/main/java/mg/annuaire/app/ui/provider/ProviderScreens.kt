@@ -67,7 +67,6 @@ import mg.annuaire.app.ui.components.RatingRow
 import mg.annuaire.app.ui.components.SectionLabel
 import mg.annuaire.app.ui.components.StatusBadge
 import mg.annuaire.app.ui.components.StepRow
-import java.io.File
 import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -470,7 +469,7 @@ fun CertificationScreen(onBack: () -> Unit) {
             prestataire?.let { StatusBadge(it.certificationStatus, showInternalStatus = true) }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
-                "Pour le badge « Certifié », envoyez votre CIN. Les visiteurs ne voient pas ces photos — seulement la commune.",
+                "Pour le badge « Certifié », envoyez votre CIN. Les visiteurs ne voient pas ces photos — seulement la commune, dans son outil web.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -548,7 +547,7 @@ private fun CinSlot(label: String, path: String?, modifier: Modifier, onPick: ()
                 }
             } else {
                 AsyncImage(
-                    model = File(path),
+                    model = PhotoStore.coilModel(path),
                     contentDescription = label,
                     modifier = Modifier.fillMaxWidth().height(120.dp),
                     contentScale = ContentScale.Crop

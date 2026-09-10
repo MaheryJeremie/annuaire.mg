@@ -12,6 +12,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material3.FilterChip
+import mg.annuaire.app.data.model.NetworkMode
+import mg.annuaire.app.ui.components.SectionLabel
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,7 +49,7 @@ import mg.annuaire.app.ui.components.AnnuaireBrandBar
 import mg.annuaire.app.ui.components.HintCard
 import mg.annuaire.app.ui.components.MainTab
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AccountHubScreen(
     onContinueVisitor: () -> Unit,
@@ -116,6 +122,46 @@ fun AccountHubScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Text("Se déconnecter")
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            NetworkSettingsCard()
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NetworkSettingsCard() {
+    val app = LocalContext.current.applicationContext.annuaireApp
+    val scope = rememberCoroutineScope()
+    val mode by app.settingsStore.networkMode.collectAsStateWithLifecycle(initialValue = NetworkMode.WIFI_ONLY)
+    val options = listOf(
+        NetworkMode.WIFI_ONLY to "Wi‑Fi uniquement",
+        NetworkMode.CELLULAR_ONLY to "Données mobiles uniquement",
+        NetworkMode.ANY to "N’importe quel réseau"
+    )
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            SectionLabel("Synchronisation")
+            Text(
+                "Par défaut, l’annuaire en ligne ne se met à jour qu’en Wi‑Fi. Vous pouvez autoriser les données mobiles, ou les deux.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                options.forEach { (value, label) ->
+                    FilterChip(
+                        selected = mode == value,
+                        onClick = {
+                            scope.launch {
+                                app.settingsStore.setNetworkMode(value)
+                                app.refreshCatalog()
+                            }
+                        },
+                        label = { Text(label) }
+                    )
                 }
             }
         }
