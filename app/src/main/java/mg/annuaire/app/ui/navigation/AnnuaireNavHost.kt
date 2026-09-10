@@ -17,10 +17,6 @@ import mg.annuaire.app.data.model.UserRole
 import mg.annuaire.app.ui.auth.AccountHubScreen
 import mg.annuaire.app.ui.auth.LoginScreen
 import mg.annuaire.app.ui.auth.RegisterScreen
-import mg.annuaire.app.ui.commune.CommuneDashboardScreen
-import mg.annuaire.app.ui.commune.PendingListScreen
-import mg.annuaire.app.ui.commune.PendingMetiersScreen
-import mg.annuaire.app.ui.commune.ReviewScreen
 import mg.annuaire.app.ui.components.MainTab
 import mg.annuaire.app.ui.help.HelpScreen
 import mg.annuaire.app.ui.provider.CertificationScreen
@@ -46,12 +42,6 @@ object Routes {
     const val ProviderHome = "provider"
     const val ProviderProfile = "provider_profile"
     const val ProviderCert = "provider_cert"
-
-    const val CommuneHome = "commune"
-    const val CommunePending = "commune_pending"
-    const val CommuneMetiers = "commune_metiers"
-    const val CommuneReview = "commune_review/{id}"
-    fun communeReview(id: Long) = "commune_review/$id"
 }
 
 @Composable
@@ -122,7 +112,6 @@ fun AnnuaireNavHost() {
                 onLogin = { navController.navigate(Routes.Login) },
                 onRegister = { navController.navigate(Routes.Register) },
                 onOpenProvider = { navController.navigate(Routes.ProviderHome) },
-                onOpenCommune = { navController.navigate(Routes.CommuneHome) },
                 onLogout = { scope.launch { app.sessionStore.clear() } },
                 onTab = ::onTab
             )
@@ -132,14 +121,12 @@ fun AnnuaireNavHost() {
             LoginScreen(
                 onBack = { navController.popBackStack() },
                 onLoggedIn = { role ->
-                    when (role) {
-                        UserRole.AGENT.name -> navController.navigate(Routes.CommuneHome) {
+                    if (role == UserRole.PROVIDER.name) {
+                        navController.navigate(Routes.ProviderHome) {
                             popUpTo(Routes.Account)
                         }
-                        UserRole.PROVIDER.name -> navController.navigate(Routes.ProviderHome) {
-                            popUpTo(Routes.Account)
-                        }
-                        else -> navController.popBackStack()
+                    } else {
+                        navController.popBackStack()
                     }
                 }
             )
@@ -169,34 +156,6 @@ fun AnnuaireNavHost() {
         }
         composable(Routes.ProviderCert) {
             CertificationScreen(onBack = { navController.popBackStack() })
-        }
-
-        composable(Routes.CommuneHome) {
-            CommuneDashboardScreen(
-                onOpenPending = { navController.navigate(Routes.CommunePending) },
-                onOpenMetiers = { navController.navigate(Routes.CommuneMetiers) },
-                onBack = { navController.popBackStack() }
-            )
-        }
-        composable(Routes.CommunePending) {
-            PendingListScreen(
-                onOpenDetail = { id -> navController.navigate(Routes.communeReview(id)) },
-                onBack = { navController.popBackStack() }
-            )
-        }
-        composable(Routes.CommuneMetiers) {
-            PendingMetiersScreen(onBack = { navController.popBackStack() })
-        }
-        composable(
-            Routes.CommuneReview,
-            arguments = listOf(navArgument("id") { type = NavType.LongType })
-        ) { entry ->
-            val id = entry.arguments?.getLong("id") ?: return@composable
-            ReviewScreen(
-                prestataireId = id,
-                onDone = { navController.popBackStack() },
-                onBack = { navController.popBackStack() }
-            )
         }
     }
 }

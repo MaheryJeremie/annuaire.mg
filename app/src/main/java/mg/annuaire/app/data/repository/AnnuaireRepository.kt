@@ -107,6 +107,11 @@ class AnnuaireRepository(
         if (user.password != password) {
             return Result.failure(IllegalStateException("Mot de passe incorrect."))
         }
+        if (user.role == UserRole.AGENT.name) {
+            return Result.failure(
+                IllegalStateException("Cet accès est réservé à l’outil web de la commune, pas à l’application mobile.")
+            )
+        }
         return Result.success(user)
     }
 
@@ -156,6 +161,10 @@ class AnnuaireRepository(
             proposedByUserId = userId
         )
         dao.upsertMetier(metier)
+        if (metier.status == MetierStatus.PENDING.name) {
+            val proposePar = dao.findUserById(userId)?.nom.orEmpty()
+            catalogSync.publishMetierPropose(metier, proposePar)
+        }
         return Result.success(metier)
     }
 
@@ -197,6 +206,7 @@ class AnnuaireRepository(
                 commentaireAgent = null
             )
         )
+        dao.findPrestataireById(prestataireId)?.let { catalogSync.publishDossier(it) }
         return Result.success(Unit)
     }
 

@@ -50,7 +50,6 @@ fun AccountHubScreen(
     onLogin: () -> Unit,
     onRegister: () -> Unit,
     onOpenProvider: () -> Unit,
-    onOpenCommune: () -> Unit,
     onLogout: () -> Unit,
     onTab: (MainTab) -> Unit
 ) {
@@ -70,7 +69,7 @@ fun AccountHubScreen(
             if (session == null) {
                 HintCard(
                     title = "Chercher sans compte",
-                    body = "L’annuaire est ouvert à tous. Un compte n’est utile que si vous êtes prestataire ou agent de commune.",
+                    body = "L’annuaire est ouvert à tous. Un compte n’est utile que si vous êtes prestataire.",
                     icon = Icons.Outlined.Search
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -93,21 +92,6 @@ fun AccountHubScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Agent communal", fontWeight = FontWeight.SemiBold)
-                        Text(
-                            "Valider les CIN et les nouveaux noms de métiers.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedButton(onClick = onLogin, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-                            Text("Connexion commune")
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(onClick = onContinueVisitor, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Text("Retour à la recherche")
                 }
@@ -115,7 +99,7 @@ fun AccountHubScreen(
                 HintCard(
                     title = "Connecté : ${session!!.nom}",
                     body = if (session!!.role == UserRole.AGENT.name) {
-                        "Vous validez les dossiers CIN et les métiers proposés."
+                        "Ce compte n’est plus utilisé dans l’application. Déconnectez-vous : la commune travaille dans son outil web."
                     } else {
                         "Complétez votre fiche, puis envoyez votre CIN."
                     },
@@ -128,11 +112,6 @@ fun AccountHubScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp)
                     ) { Text("Mon espace prestataire") }
-                    UserRole.AGENT.name -> Button(
-                        onClick = onOpenCommune,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
-                    ) { Text("Espace commune") }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(onClick = onLogout, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
@@ -174,7 +153,7 @@ fun LoginScreen(
                 .padding(16.dp)
         ) {
             Text(
-                "Compte démo agent : 0320000000 / agent123\nCompte démo prestataire : 0341111111 / demo123",
+                "Compte démo prestataire : 0341111111 / demo123",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
