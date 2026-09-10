@@ -129,7 +129,7 @@ annuaire.api.baseUrl=https://annuaire-mg-default-rtdb.europe-west1.firebasedatab
 | Données mobiles seulement | Catalogue `assets` |
 | Wi‑Fi + URL fausse | Catalogue `assets` |
 
-Pas de bouton de sync dans l’accueil : la sync part au lancement. Changer le réglage réseau dans Compte relance une sync. Après une validation commune, reconnecter selon le réglage choisi (Wi‑Fi par défaut).
+Dans l’accueil, **tirer vers le bas** actualise le catalogue (selon le réglage réseau). Changer le réglage dans Compte relance aussi une sync.
 
 Vérifier dans le navigateur `{baseUrl}.json` ou `{baseUrl}catalog.json`.
 

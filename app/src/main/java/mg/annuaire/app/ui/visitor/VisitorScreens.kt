@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -100,17 +101,25 @@ fun HomeSearchScreen(
         }
     }
 
+    val app = LocalContext.current.applicationContext.annuaireApp
+    val refreshing by app.isRefreshing.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = { AnnuaireBrandBar() },
         bottomBar = { AnnuaireBottomBar(MainTab.Home, onTab) }
     ) { padding ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { app.refreshCatalog() },
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxSize()
         ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
             item {
                 Text(
                     "Prestataires près de chez vous",
@@ -177,6 +186,7 @@ fun HomeSearchScreen(
                 items(state.results, key = { it.id }) { item ->
                     PrestataireCard(item) { onOpenDetail(item.id) }
                 }
+            }
             }
         }
     }
