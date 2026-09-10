@@ -1,6 +1,7 @@
 # annuaire.mg — sync, Firebase et rôles
 
-Cadrage produit : [`docs/Annuaire_mg.md`](docs/Annuaire_mg.md).
+Cadrage produit : [`docs/Annuaire_mg.md`](docs/Annuaire_mg.md).  
+Présentation (plan projet transversal) : [`docs/Documentation.md`](docs/Documentation.md).
 
 ## Comportement final
 
@@ -180,6 +181,7 @@ URL de l’outil : `annuaire-commune-web/config.js` (même base que `annuaire.ap
 | Fichier | Rôle |
 |---------|------|
 | `docs/Annuaire_mg.md` | Cadrage produit (espaces, UX, stack, démos) |
+| `docs/Documentation.md` | Document de présentation (plan type projet transversal) |
 | `remote-api/catalog.json` | À importer dans Firebase |
 | `app/src/main/assets/catalog.json` | Fallback local |
 | `local.properties` | `annuaire.api.baseUrl` + Cloudinary |
