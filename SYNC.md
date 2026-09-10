@@ -1,5 +1,7 @@
 # annuaire.mg — sync, Firebase et rôles
 
+Cadrage produit : [`docs/Annuaire_mg.md`](docs/Annuaire_mg.md).
+
 ## Comportement final
 
 L’application **Android** n’a que **deux espaces**. La commune n’est **pas** dans l’app.
@@ -21,7 +23,7 @@ Navigation mobile : **Accueil / Aide / Compte**.
 ### Prestataire
 - Inscription / connexion dans **Compte**.
 - Démo : **0341111111** / **demo123**.
-- Fiche : photo, métier (suggestions ou nouveau nom), quartiers, tarifs, disponibilité.
+- Fiche : photo, métier (suggestions ou nouveau nom), quartiers en **sélection multiple**, **plusieurs tarifs** (bouton +), disponibilité.
 - Badge : envoi du **CIN** (numéro + photos recto/verso). Les photos partent en ligne pour la commune ; les visiteurs ne les voient pas.
 - Un agent qui tente de se connecter dans l’app est renvoyé vers l’outil web.
 
@@ -177,6 +179,7 @@ URL de l’outil : `annuaire-commune-web/config.js` (même base que `annuaire.ap
 
 | Fichier | Rôle |
 |---------|------|
+| `docs/Annuaire_mg.md` | Cadrage produit (espaces, UX, stack, démos) |
 | `remote-api/catalog.json` | À importer dans Firebase |
 | `app/src/main/assets/catalog.json` | Fallback local |
 | `local.properties` | `annuaire.api.baseUrl` + Cloudinary |
