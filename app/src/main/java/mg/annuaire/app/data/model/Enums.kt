@@ -17,3 +17,9 @@ enum class MetierStatus {
     PENDING,
     REJECTED
 }
+
+enum class NetworkMode {
+    WIFI_ONLY,
+    CELLULAR_ONLY,
+    ANY
+}

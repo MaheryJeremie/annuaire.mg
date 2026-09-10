@@ -22,7 +22,7 @@ Navigation mobile : **Accueil / Aide / Compte**.
 - Inscription / connexion dans **Compte**.
 - Démo : **0341111111** / **demo123**.
 - Fiche : photo, métier (suggestions ou nouveau nom), quartiers, tarifs, disponibilité.
-- Badge : envoi du **CIN** (numéro + photos recto/verso). Les photos CIN restent sur le téléphone.
+- Badge : envoi du **CIN** (numéro + photos recto/verso). Les photos partent en ligne pour la commune ; les visiteurs ne les voient pas.
 - Un agent qui tente de se connecter dans l’app est renvoyé vers l’outil web.
 
 ### Commune (web uniquement)
@@ -34,16 +34,22 @@ Navigation mobile : **Accueil / Aide / Compte**.
 ### Comment le badge arrive dans l’app
 1. Le prestataire envoie son CIN → Room (PENDING) + nœud Firebase `dossiers/{id}`.
 2. La commune valide dans l’outil web → Firebase `dossiers/{id}` = `CERTIFIED` (ou `REJECTED`).
-3. Au **prochain sync Wi‑Fi**, l’app lit `dossiers` et affiche **Certifié**.
+3. À la **prochaine sync** (Wi‑Fi par défaut, réglable dans Compte), l’app lit `dossiers` et affiche **Certifié**.
 
 Même logique pour un **métier proposé** → `metiers_proposes/{id}`.
 
 ---
 
-## Sync catalogue (Wi‑Fi uniquement)
+## Sync catalogue (réglage dans Compte)
 
-La sync **réseau** ne part **que si le téléphone est en Wi‑Fi**.  
-Sinon (4G/5G, hors ligne, ou API en erreur) → `app/src/main/assets/catalog.json`.
+Par défaut, la sync **réseau** ne part **que si le téléphone est en Wi‑Fi**.  
+Dans **Compte → Synchronisation**, on peut choisir :
+
+- **Wi‑Fi uniquement** (défaut)
+- **Données mobiles uniquement**
+- **N’importe quel réseau**
+
+Sinon (réseau non autorisé, hors ligne, ou API en erreur) → `app/src/main/assets/catalog.json`.
 
 L’app lit d’abord `{baseUrl}catalog.json`. Si ce nœud est vide, elle lit la **racine** `{baseUrl}.json` (cas actuel de la base de démo).
 
@@ -123,7 +129,7 @@ annuaire.api.baseUrl=https://annuaire-mg-default-rtdb.europe-west1.firebasedatab
 | Données mobiles seulement | Catalogue `assets` |
 | Wi‑Fi + URL fausse | Catalogue `assets` |
 
-Pas de bouton de sync dans l’interface : la sync part au lancement (et via `refreshCatalog()` en code). Relancer l’app en Wi‑Fi après une validation commune.
+Pas de bouton de sync dans l’accueil : la sync part au lancement. Changer le réglage réseau dans Compte relance une sync. Après une validation commune, reconnecter selon le réglage choisi (Wi‑Fi par défaut).
 
 Vérifier dans le navigateur `{baseUrl}.json` ou `{baseUrl}catalog.json`.
 
@@ -131,10 +137,11 @@ Pas besoin de `google-services.json` : REST Retrofit, pas le SDK Firebase Androi
 
 ---
 
-## Photos de profil (Cloudinary)
+## Photos (profil et CIN)
 
-Les photos **CIN** restent sur le téléphone (jamais le CDN).  
-Les photos de **profil** : Cloudinary, puis URL dans RTDB `photos/{id}`. L’interface ne parle pas de CDN.
+Les photos de **profil** : envoi distant, URL dans RTDB `photos/{id}`. Visibles dans l’annuaire.
+
+Les photos **CIN** : envoi distant aussi, mais uniquement dans `dossiers/{id}` (`cinRectoUrl`, `cinVersoUrl`). L’outil commune les affiche. Les visiteurs ne les voient jamais. L’interface ne parle pas de CDN.
 
 ```properties
 annuaire.cdn.cloudinaryCloud=VOTRE_CLOUD_NAME
@@ -158,7 +165,7 @@ Projet/
 
 | Nœud Firebase | Rôle |
 |---------------|------|
-| `dossiers/{id}` | Acceptation / refus CIN |
+| `dossiers/{id}` | Acceptation / refus CIN + URLs des photos recto/verso |
 | `metiers_proposes/{id}` | Acceptation / refus métier |
 | `prestataires/{index}` | Statut dans le catalogue (si les règles l’autorisent) |
 
@@ -173,4 +180,4 @@ URL de l’outil : `annuaire-commune-web/config.js` (même base que `annuaire.ap
 | `remote-api/catalog.json` | À importer dans Firebase |
 | `app/src/main/assets/catalog.json` | Fallback local |
 | `local.properties` | `annuaire.api.baseUrl` + Cloudinary |
-| `WifiChecker.kt` | Sync catalogue = Wi‑Fi ; envoi dossier = n’importe quelle connexion |
+| `WifiChecker.kt` | Autorise le réseau selon le réglage Compte (Wi‑Fi par défaut) |

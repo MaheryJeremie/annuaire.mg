@@ -19,15 +19,18 @@ import mg.annuaire.app.data.remote.CertificationPatchDto
 import mg.annuaire.app.data.remote.DossierDto
 import mg.annuaire.app.data.remote.MetierProposeDto
 import mg.annuaire.app.data.remote.NetworkModule
+import kotlinx.coroutines.flow.first
+import mg.annuaire.app.data.session.SettingsStore
 
 /**
  * Offline-first : Room = source de vérité.
- * Sync **uniquement en Wi‑Fi** ; sinon (ou si erreur réseau) → assets/catalog.json.
+ * Sync réseau selon le réglage (Wi‑Fi par défaut).
  */
 class CatalogSync(
     private val context: Context,
     private val dao: AnnuaireDao,
-    private val api: AnnuaireApi
+    private val api: AnnuaireApi,
+    private val settings: SettingsStore
 ) {
     sealed class Result {
         data class Ok(val source: String, val communes: Int, val quartiers: Int) : Result()
@@ -47,20 +50,24 @@ class CatalogSync(
     }
 
     private suspend fun resolveCatalog(): Pair<CatalogDto, String> {
-        if (!WifiChecker.isWifiConnected(context)) {
-            Log.i(TAG, "Pas de Wi‑Fi → pas de sync réseau, fallback assets")
-            return loadAssets("hors Wi‑Fi · catalogue local")
+        val mode = settings.networkMode.first()
+        if (!WifiChecker.allows(context, mode)) {
+            Log.i(TAG, "Réseau non autorisé → fallback assets")
+            return loadAssets(WifiChecker.fallbackLabel(mode))
         }
         return try {
             val remote = loadRemoteCatalog()
-                ?: return loadAssets("Wi‑Fi · catalogue local")
-            Log.i(TAG, "Sync Wi‑Fi OK (version=${remote.version})")
-            remote to "Wi‑Fi · Firebase"
+                ?: return loadAssets("réseau · catalogue local")
+            Log.i(TAG, "Sync OK (version=${remote.version})")
+            remote to WifiChecker.successLabel(mode)
         } catch (e: Exception) {
-            Log.w(TAG, "Sync Wi‑Fi échouée, fallback assets: ${e.message}")
-            loadAssets("Wi‑Fi · catalogue local")
+            Log.w(TAG, "Sync échouée, fallback assets: ${e.message}")
+            loadAssets("réseau · catalogue local")
         }
     }
+
+    private suspend fun networkAllowed(): Boolean =
+        WifiChecker.allows(context, settings.networkMode.first())
 
     private suspend fun loadRemoteCatalog(): CatalogDto? {
         val nested = runCatching { api.getCatalog() }.getOrNull()
@@ -171,7 +178,7 @@ class CatalogSync(
     }
 
     private suspend fun mergeRemotePhotos() {
-        if (!WifiChecker.isWifiConnected(context)) return
+        if (!networkAllowed()) return
         val remote = runCatching { api.getPhotoUrls() }.getOrNull() ?: return
         remote.forEach { (key, dto) ->
             val id = key.toLongOrNull() ?: return@forEach
@@ -188,7 +195,7 @@ class CatalogSync(
     }
 
     private suspend fun mergeRemoteDecisions() {
-        if (!WifiChecker.isWifiConnected(context)) return
+        if (!networkAllowed()) return
         runCatching { api.getDossiers() }.getOrNull().orEmpty().forEach { (key, dto) ->
             val id = dto.id.takeIf { it > 0 } ?: key.toLongOrNull() ?: return@forEach
             if (dto.status.isBlank()) return@forEach
@@ -222,7 +229,7 @@ class CatalogSync(
     }
 
     suspend fun publishDossier(prestataire: Prestataire) {
-        if (!WifiChecker.isOnline(context)) return
+        if (!networkAllowed()) return
         val dto = DossierDto(
             id = prestataire.id,
             nom = prestataire.nom,
@@ -232,6 +239,8 @@ class CatalogSync(
             communeId = prestataire.communeId,
             quartiers = dao.quartierNamesFor(prestataire.id).joinToString(", "),
             cinNumero = prestataire.cinNumero,
+            cinRectoUrl = httpUrl(prestataire.cinRectoPath),
+            cinVersoUrl = httpUrl(prestataire.cinVersoPath),
             status = prestataire.certificationStatus,
             commentaire = prestataire.commentaireAgent,
             updatedAt = System.currentTimeMillis()
@@ -254,7 +263,7 @@ class CatalogSync(
     }
 
     suspend fun publishMetierPropose(metier: Metier, proposePar: String) {
-        if (!WifiChecker.isOnline(context)) return
+        if (!networkAllowed()) return
         val dto = MetierProposeDto(
             id = metier.id,
             nom = metier.nom,
@@ -265,6 +274,9 @@ class CatalogSync(
         runCatching { api.putMetierPropose(metier.id, dto) }
             .onFailure { Log.w(TAG, "Métier proposé en ligne: ${it.message}") }
     }
+
+    private fun httpUrl(path: String?): String? =
+        path?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
 
     companion object {
         private const val TAG = "CatalogSync"

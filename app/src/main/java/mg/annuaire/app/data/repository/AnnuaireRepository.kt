@@ -200,8 +200,8 @@ class AnnuaireRepository(
             p.copy(
                 communeId = communeId,
                 cinNumero = cin,
-                cinRectoPath = cinRectoPath,
-                cinVersoPath = cinVersoPath,
+                cinRectoPath = photoCdn.publishCinPhoto(cinRectoPath) ?: cinRectoPath,
+                cinVersoPath = photoCdn.publishCinPhoto(cinVersoPath) ?: cinVersoPath,
                 certificationStatus = CertificationStatus.PENDING.name,
                 commentaireAgent = null
             )

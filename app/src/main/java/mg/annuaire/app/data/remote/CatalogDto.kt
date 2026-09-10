@@ -81,6 +81,8 @@ data class DossierDto(
     val communeId: Long = 0,
     val quartiers: String = "",
     val cinNumero: String? = null,
+    val cinRectoUrl: String? = null,
+    val cinVersoUrl: String? = null,
     val status: String = "PENDING",
     val commentaire: String? = null,
     val updatedAt: Long = 0

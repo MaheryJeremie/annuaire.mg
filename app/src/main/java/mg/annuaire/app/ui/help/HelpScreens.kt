@@ -66,8 +66,8 @@ fun HelpScreen(
                 icon = Icons.Outlined.Search
             )
             HintCard(
-                title = "Wi‑Fi uniquement pour la sync",
-                body = "Les mises à jour du catalogue (quartiers, métiers) se font en Wi‑Fi. Hors Wi‑Fi, l’app utilise les données déjà sur le téléphone.",
+                title = "Réseau pour la sync",
+                body = "Par défaut, le catalogue se met à jour en Wi‑Fi seulement. Dans Compte, vous pouvez choisir les données mobiles, ou n’importe quel réseau. Sinon l’app garde les données déjà sur le téléphone.",
                 icon = Icons.Outlined.WifiOff
             )
 
@@ -83,8 +83,8 @@ fun HelpScreen(
             SectionLabel("Questions fréquentes")
             Faq("Dois-je payer ?", "Non. L’annuaire est un service public de proximité.")
             Faq("Pourquoi mon métier n’apparaît pas tout de suite ?", "Un nouveau nom doit être validé par la commune, pour éviter les doublons et les fautes.")
-            Faq("Mes photos CIN sont-elles publiques ?", "Non. Seule la commune les voit pour vérifier votre identité. Les visiteurs ne voient pas le CIN.")
-            Faq("La photo de profil est-elle publique ?", "Oui. Elle apparaît sur votre fiche. Les photos de CIN restent privées : seule la commune les consulte.")
+            Faq("Mes photos CIN sont-elles publiques ?", "Non. Seule la commune les voit dans son outil web, pour vérifier votre identité. Les visiteurs ne voient pas le CIN.")
+            Faq("La photo de profil est-elle publique ?", "Oui. Elle apparaît sur votre fiche. Les photos de CIN restent réservées à la commune.")
             Faq("Puis-je laisser un avis ?", "Oui. Sur la fiche d’un prestataire, donnez une note de 1 à 5 et un commentaire.")
         }
     }

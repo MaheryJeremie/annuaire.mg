@@ -3,8 +3,10 @@ package mg.annuaire.app.data.remote
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import mg.annuaire.app.BuildConfig
+import mg.annuaire.app.data.session.SettingsStore
 import mg.annuaire.app.data.sync.WifiChecker
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -14,27 +16,32 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
 /**
- * Photos de profil : fichier local + URL Cloudinary.
- * Les photos CIN ne passent jamais par ici.
+ * Envoi des images (profil public, CIN pour la commune uniquement).
+ * Rien de technique n’apparaît dans l’interface.
  */
 class PhotoCdn(
     private val context: Context,
     private val api: AnnuaireApi,
-    private val http: OkHttpClient
+    private val http: OkHttpClient,
+    private val settings: SettingsStore
 ) {
     suspend fun publishProfilePhoto(prestataireId: Long, path: String?): String? {
-        if (path.isNullOrBlank()) return null
-        if (path.startsWith("http://") || path.startsWith("https://")) {
-            runCatching { api.putPhotoUrl(prestataireId, PhotoUrlDto(path)) }
-            return path
-        }
-        if (!WifiChecker.isOnline(context)) return null
-        val file = File(path)
-        if (!file.exists()) return null
-        val url = uploadCloudinary(file) ?: return null
+        val url = publishFile(path) ?: return path?.takeIf { it.startsWith("http") }
         runCatching { api.putPhotoUrl(prestataireId, PhotoUrlDto(url)) }
             .onFailure { Log.w(TAG, "Index photos: ${it.message}") }
         return url
+    }
+
+    /** CIN : URL distante pour l’outil commune, jamais indexée dans `photos/`. */
+    suspend fun publishCinPhoto(path: String?): String? = publishFile(path)
+
+    private suspend fun publishFile(path: String?): String? {
+        if (path.isNullOrBlank()) return null
+        if (path.startsWith("http://") || path.startsWith("https://")) return path
+        if (!WifiChecker.allows(context, settings.networkMode.first())) return null
+        val file = File(path)
+        if (!file.exists()) return null
+        return uploadCloudinary(file)
     }
 
     private suspend fun uploadCloudinary(file: File): String? = withContext(Dispatchers.IO) {
