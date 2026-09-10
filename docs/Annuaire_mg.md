@@ -1,6 +1,7 @@
 # Annuaire.mg — Contexte et comportement final
 
 Cadrage du projet, versionné dans ce dépôt : [`docs/Annuaire_mg.md`](Annuaire_mg.md).  
+Document de présentation (plan projet transversal) : [`Documentation.md`](Documentation.md).  
 Dépôt GitHub : [github.com/MaheryJeremie/annuaire.mg](https://github.com/MaheryJeremie/annuaire.mg).  
 Guide technique (Firebase, règles, sync) : [`SYNC.md`](../SYNC.md).
 
@@ -32,14 +33,13 @@ Ce n’est pas une marketplace privée type Facebook : c’est un **registre à 
 - **Badge « Certifié »** après validation communale du CIN
 
 ### Ce que ce n’est PAS
-- Pas de troisième espace « agent » dans l’app Android
 - Pas un clone Facebook, pas d’Uber, pas de chat, pas de paiement in-app
 
 ---
 
 ## 3. Le problème
 
-À Madagascar, pour trouver un plombier ou un électricien, les gens postent souvent dans un **groupe Facebook**, attendent des réponses, demandent le prix en MP, et espèrent que la personne soit joignable.
+À Madagascar, pour trouver un service specifique, les gens postent souvent dans un **groupe Facebook**, attendent des réponses, demandent le prix en MP, et espèrent que la personne soit joignable.
 
 | Problème | Effet |
 |----------|--------|
@@ -49,7 +49,7 @@ Ce n’est pas une marketplace privée type Facebook : c’est un **registre à 
 | Confiance faible | Numéros morts, arnaques |
 | Connexion irrégulière | Facebook peu pratique hors ligne |
 
-**Thèse :** un annuaire officiel cherchable, tarifs visibles, profils validés, consultable hors ligne (Room).
+**Thèse :** un annuaire officiel cherchable, tarifs visibles, profils validés, consultable hors ligne.
 
 ---
 
@@ -58,31 +58,26 @@ Ce n’est pas une marketplace privée type Facebook : c’est un **registre à 
 ### Visiteur (app, sans compte)
 1. Ouvre **Accueil** : la liste est déjà là
 2. Filtre si besoin : **Certifiés**, **Dispo aujourd’hui**, métier, quartier
-3. **Tirer vers le bas** actualise le catalogue (selon le réglage réseau)
-4. Ouvre une fiche : tarifs, avis, badge **Certifié** s’il y a lieu
-5. **Appeler** ou **SMS** ; peut laisser un avis
+3. Ouvre une fiche : tarifs, avis, badge **Certifié** s’il y a lieu
+4. **Appeler** ou **SMS** ; peut laisser un avis
+5. Choisis le mode de **synchronisation** en ligne qu'il préfere : wifi uniquement , n'importe quel reseau 
 
 ### Prestataire (app, compte)
 1. **Compte** → se connecter ou créer un compte  
-   Démo : `0341111111` / `demo123`
 2. Complète la fiche :
    - photo de profil
    - métier (suggestions, ou proposition à la commune)
    - commune
    - **quartiers en sélection multiple** (menu déroulant, pas une longue liste de puces)
-   - **tarifs** : autant de lignes que besoin (nom + montant Ar) ; un bouton **+** ajoute une ligne
+   - **tarifs** : autant de lignes que besoin (nom + montant Ar) ;
    - disponibilité du jour
 3. Si le métier n’existe pas : il le propose ; la commune valide le nom
 4. Envoie le **CIN** (numéro + recto + verso)
-5. Le badge **Certifié** apparaît après décision de la commune **et** une sync (Wi‑Fi par défaut, réglable dans Compte)
+5. Le badge **Certifié** apparaît après décision de la commune **et** une sync 
 
 ### Commune (application web séparée)
-- Pas dans l’app, pas dans ce dépôt Git
-- Dossier : `annuaire-commune-web/` (à côté de ce projet)
-- Démo : `0320000000` / `agent123`
+- Pas dans l’app
 - Valide / refuse les dossiers CIN et les métiers **sur Firebase**
-
-Aucun écran « Agent communal » dans Android. Un login agent dans l’app est refusé (message : utiliser l’outil web).
 
 ---
 
@@ -119,7 +114,6 @@ Les visiteurs ne voient que le badge **Certifié**. Les photos CIN ne sont pas p
 - Back-office commune HTML + Firebase (`dossiers`, `metiers_proposes`)
 
 ### Exclus
-- Espace commune **dans** l’app
 - Paiement, messagerie, GPS temps réel, carte complexe
 
 ---
@@ -219,6 +213,7 @@ Démo commune (web) : **0320000000** / **agent123**.
 Projet/
   annuaire.mg/                      App Android (ce dépôt Git)
     docs/Annuaire_mg.md             ← ce cadrage
+    docs/Documentation.md           ← présentation (plan projet transversal)
     SYNC.md                         Firebase, règles, sync, photos
     app/                            Kotlin / Compose
   annuaire-commune-web/             Outil commune (hors Git)
