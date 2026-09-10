@@ -26,6 +26,9 @@ class AnnuaireApp : Application() {
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _syncStatus = MutableStateFlow("Synchronisation…")
     val syncStatus: StateFlow<String> = _syncStatus.asStateFlow()
 
@@ -39,22 +42,17 @@ class AnnuaireApp : Application() {
         val photoCdn = PhotoCdn(this, api, NetworkModule.createHttpClient(), settingsStore)
         repository = AnnuaireRepository(db.dao(), sync, photoCdn)
 
-        appScope.launch {
-            when (val result = repository.syncCatalog()) {
-                is CatalogSync.Result.Ok -> {
-                    _syncStatus.value =
-                        "Catalogue ${result.source} · ${result.communes} communes · ${result.quartiers} quartiers"
-                }
-                is CatalogSync.Result.Error -> {
-                    _syncStatus.value = "Sync échouée : ${result.message}"
-                }
-            }
-        }
+        appScope.launch { runSync() }
     }
 
     fun refreshCatalog() {
-        appScope.launch {
-            _syncStatus.value = "Synchronisation…"
+        appScope.launch { runSync() }
+    }
+
+    private suspend fun runSync() {
+        _isRefreshing.value = true
+        _syncStatus.value = "Synchronisation…"
+        try {
             when (val result = repository.syncCatalog()) {
                 is CatalogSync.Result.Ok -> {
                     _syncStatus.value =
@@ -64,6 +62,8 @@ class AnnuaireApp : Application() {
                     _syncStatus.value = "Sync échouée : ${result.message}"
                 }
             }
+        } finally {
+            _isRefreshing.value = false
         }
     }
 }
