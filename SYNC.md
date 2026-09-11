@@ -24,7 +24,7 @@ Navigation mobile : **Accueil / Aide / Compte**.
 ### Prestataire
 - Inscription / connexion dans **Compte**.
 - Démo : **0341111111** / **demo123**.
-- Fiche : photo, métier (suggestions ou nouveau nom), quartiers en **sélection multiple**, **plusieurs tarifs** (bouton +), disponibilité.
+- Fiche : photo, métier (suggestions ou nouveau nom), quartiers en **saisie libre + autocomplétion** (plusieurs), **plusieurs tarifs** (bouton +), disponibilité. Pas de choix de commune : elle est assignée à l’envoi du CIN.
 - Badge : envoi du **CIN** (numéro + photos recto/verso). Les photos partent en ligne pour la commune ; les visiteurs ne les voient pas.
 - Un agent qui tente de se connecter dans l’app est renvoyé vers l’outil web.
 

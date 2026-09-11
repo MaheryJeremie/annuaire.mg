@@ -198,12 +198,14 @@ N’utilise **pas** l’app Android. Il se connecte à l’outil web (annexe A) 
 
 - Un artisan s’inscrit dans **Compte**.
 - Il choisit son métier (suggestions) ou en propose un nouveau.
-- Il sélectionne **plusieurs quartiers** dans un menu, ajoute **plusieurs tarifs** avec le bouton **+**.
+- Il tape ses **quartiers** (suggestions, plusieurs possibles), ajoute **plusieurs tarifs** avec le bouton **+**.
+- Il n’a pas à choisir une commune.
 - Il enregistre. Sa fiche devient visible dans l’annuaire (localement tout de suite ; en ligne après sync).
 
 **3. Obtenir le badge Certifié**
 
 - Le prestataire envoie numéro CIN + photos recto / verso.
+- La **commune correspondante** (d’après ses quartiers) lui est **assignée et indiquée** ; il ne la choisit pas.
 - L’agent communal voit le dossier dans l’outil web, photos comprises.
 - Il valide. À la prochaine synchronisation du téléphone, le visiteur voit **Certifié**.
 
@@ -305,8 +307,8 @@ Formulaire public.
 |-------|----------------|
 | Photo de profil | Publique, distincte du CIN |
 | Métier | Suggestions ; si le nom n’existe pas, proposition à la commune (`PENDING`) |
-| Commune | Liste déroulante simple |
-| Quartiers | **Select multiple** : menu à cases à cocher ; seules les sélections apparaissent en puces |
+| Quartiers | Champ libre + autocomplétion, **plusieurs** ; puces des quartiers choisis |
+| Commune | Absente de ce formulaire. Assignée à l’envoi du CIN d’après les quartiers |
 | Présentation | Texte multiligne |
 | Tarifs | Une ou plusieurs lignes **nom + montant (Ar)** ; bouton **Ajouter un tarif** ; retrait d’une ligne s’il en reste plus d’une |
 | Dispo | Interrupteur « Disponible aujourd’hui » |
@@ -315,11 +317,11 @@ Enregistrement → Room. La fiche est celle que le visiteur verra.
 
 #### Vérification CIN
 
-- Commune de vérification
+- Commune de vérification : **affichée seulement**, déduite des quartiers (pas de liste à choisir)
 - Numéro CIN
 - Photos recto et verso (stockage local + envoi distant pour la commune)
 - Statut du dossier
-- Bouton **Envoyer le dossier** → Room `PENDING` + nœud Firebase `dossiers/{id}` (avec URLs des photos)
+- Bouton **Envoyer le dossier** → Room `PENDING` + nœud Firebase `dossiers/{id}` (avec URLs des photos) ; la commune est écrite à ce moment
 
 Les visiteurs **ne voient jamais** ces photos.
 
