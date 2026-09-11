@@ -74,7 +74,7 @@ fun HelpScreen(
             SectionLabel("Si vous êtes prestataire")
             HelpBlock(
                 "1. Inscrivez-vous avec votre téléphone.",
-                "2. Remplissez la fiche : photo, métier, quartiers (sélection multiple) et autant de tarifs que besoin.",
+                "2. Remplissez la fiche : photo, métier, quartiers (tapez pour autocompléter, plusieurs possibles) et autant de tarifs que besoin.",
                 "3. Si votre métier n’existe pas, tapez-le : des suggestions apparaissent, ou proposez un nouveau nom. La commune valide le nom.",
                 "4. Demandez la vérification : numéro de CIN + photo recto + photo verso.",
                 "5. Une fois le dossier accepté, le badge « Certifié » s’affiche sur votre fiche."

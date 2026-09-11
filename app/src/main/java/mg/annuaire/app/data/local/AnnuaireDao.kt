@@ -128,6 +128,19 @@ interface AnnuaireDao {
     )
     suspend fun quartierNamesFor(prestataireId: Long): List<String>
 
+    @Query(
+        """
+        SELECT q.* FROM quartiers q
+        INNER JOIN prestataire_quartiers pq ON pq.quartierId = q.id
+        WHERE pq.prestataireId = :prestataireId
+        ORDER BY q.nom
+        """
+    )
+    suspend fun quartiersFor(prestataireId: Long): List<Quartier>
+
+    @Query("SELECT * FROM quartiers WHERE id IN (:ids)")
+    suspend fun findQuartiersByIds(ids: List<Long>): List<Quartier>
+
     @Query("SELECT * FROM tarifs WHERE prestataireId = :prestataireId ORDER BY montantAr")
     suspend fun tarifsFor(prestataireId: Long): List<Tarif>
 

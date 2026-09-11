@@ -120,13 +120,42 @@ class AnnuaireRepository(
 
     suspend fun getMetier(id: Long): Metier? = dao.findMetierById(id)
 
+    suspend fun quartiersForPrestataire(prestataireId: Long): List<Quartier> =
+        dao.quartiersFor(prestataireId)
+
+    suspend fun communeFromQuartierIds(quartierIds: Collection<Long>): Commune? {
+        if (quartierIds.isEmpty()) return null
+        val selected = dao.findQuartiersByIds(quartierIds.toList())
+        val communeId = dominantCommuneId(selected) ?: return null
+        return dao.findCommune(communeId)
+    }
+
+    suspend fun communeForPrestataire(prestataireId: Long): Commune? {
+        val selected = dao.quartiersFor(prestataireId)
+        val communeId = dominantCommuneId(selected) ?: return null
+        return dao.findCommune(communeId)
+    }
+
+    private fun dominantCommuneId(quartiers: List<Quartier>): Long? =
+        quartiers.groupingBy { it.communeId }.eachCount().maxByOrNull { it.value }?.key
+
     suspend fun saveProviderProfile(
         prestataire: Prestataire,
         quartierIds: List<Long>,
         tarifs: List<Pair<String, Int>>
     ) {
         val remotePhoto = photoCdn.publishProfilePhoto(prestataire.id, prestataire.photoPath)
-        dao.updatePrestataire(prestataire.copy(photoPath = remotePhoto ?: prestataire.photoPath))
+        val inferredCommuneId = if (quartierIds.isEmpty()) {
+            prestataire.communeId
+        } else {
+            dominantCommuneId(dao.findQuartiersByIds(quartierIds)) ?: prestataire.communeId
+        }
+        dao.updatePrestataire(
+            prestataire.copy(
+                photoPath = remotePhoto ?: prestataire.photoPath,
+                communeId = inferredCommuneId
+            )
+        )
         dao.clearQuartiers(prestataire.id)
         dao.insertPrestataireQuartiers(
             quartierIds.map { PrestataireQuartier(prestataire.id, it) }
@@ -179,7 +208,6 @@ class AnnuaireRepository(
 
     suspend fun requestCertification(
         prestataireId: Long,
-        communeId: Long,
         cinNumero: String,
         cinRectoPath: String?,
         cinVersoPath: String?
@@ -189,6 +217,12 @@ class AnnuaireRepository(
         if (p.description.isBlank()) {
             return Result.failure(IllegalStateException("Complétez d'abord votre fiche (description)."))
         }
+        val quartiers = dao.quartiersFor(prestataireId)
+        if (quartiers.isEmpty()) {
+            return Result.failure(IllegalStateException("Ajoutez d'abord les quartiers où vous intervenez."))
+        }
+        val communeId = dominantCommuneId(quartiers)
+            ?: return Result.failure(IllegalStateException("Impossible d’assigner une commune."))
         val cin = cinNumero.trim()
         if (cin.length < 5) {
             return Result.failure(IllegalStateException("Indiquez le numéro de CIN."))

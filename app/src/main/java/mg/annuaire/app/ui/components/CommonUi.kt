@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,19 +21,16 @@ import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.NavigationBar
@@ -406,86 +401,6 @@ fun DropdownField(
                         expanded = false
                     }
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Composable
-fun MultiSelectDropdown(
-    label: String,
-    options: List<Pair<String, Long>>,
-    selectedIds: Set<Long>,
-    onChange: (Set<Long>) -> Unit,
-    placeholder: String = "Choisir…",
-    emptyText: String = "Aucun choix"
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val selected = options.filter { it.second in selectedIds }
-    val summary = when {
-        selected.isEmpty() -> ""
-        selected.size <= 2 -> selected.joinToString(", ") { it.first }
-        else -> "${selected.size} sélectionnés"
-    }
-
-    Column {
-        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-            OutlinedTextField(
-                value = summary,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(label) },
-                placeholder = { Text(placeholder) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
-            )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                if (options.isEmpty()) {
-                    DropdownMenuItem(
-                        text = { Text(emptyText) },
-                        onClick = { expanded = false },
-                        enabled = false
-                    )
-                } else {
-                    options.forEach { (text, id) ->
-                        val checked = id in selectedIds
-                        DropdownMenuItem(
-                            text = { Text(text) },
-                            leadingIcon = {
-                                Checkbox(checked = checked, onCheckedChange = null)
-                            },
-                            onClick = {
-                                onChange(if (checked) selectedIds - id else selectedIds + id)
-                            }
-                        )
-                    }
-                }
-            }
-        }
-        if (selected.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                selected.forEach { (text, id) ->
-                    InputChip(
-                        selected = true,
-                        onClick = { onChange(selectedIds - id) },
-                        label = { Text(text) },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Outlined.Close,
-                                contentDescription = "Retirer $text",
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    )
-                }
             }
         }
     }
