@@ -58,13 +58,13 @@ import kotlinx.coroutines.launch
 import mg.annuaire.app.annuaireApp
 import mg.annuaire.app.data.local.CinPhotoStore
 import mg.annuaire.app.data.local.PhotoStore
+import mg.annuaire.app.data.model.Commune
 import mg.annuaire.app.data.model.Metier
 import mg.annuaire.app.data.model.Prestataire
-import mg.annuaire.app.ui.components.DropdownField
 import mg.annuaire.app.ui.components.HintCard
 import mg.annuaire.app.ui.components.MetierSearchField
-import mg.annuaire.app.ui.components.MultiSelectDropdown
 import mg.annuaire.app.ui.components.PrestataireAvatar
+import mg.annuaire.app.ui.components.QuartierMultiSearchField
 import mg.annuaire.app.ui.components.RatingRow
 import mg.annuaire.app.ui.components.SectionLabel
 import mg.annuaire.app.ui.components.StatusBadge
@@ -132,7 +132,7 @@ fun ProviderHomeScreen(
                 title = "3 étapes pour être visible et de confiance",
                 body = "Fiche complète → photos CIN → validation commune."
             )
-            StepRow("1", "Ma fiche", "Photo, métier, quartiers, tarifs, disponibilité.")
+            StepRow("1", "Ma fiche", "Photo, téléphones, métier, quartiers, tarifs, disponibilité.")
             Button(onClick = onEditProfile, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                 Text("Compléter / modifier ma fiche")
             }
@@ -167,6 +167,7 @@ fun ProviderHomeScreen(
 }
 
 private data class TarifDraft(val libelle: String, val montant: String)
+private data class PhoneDraft(val numero: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -177,21 +178,21 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val metiers by app.repository.observeMetiers().collectAsStateWithLifecycle(initialValue = emptyList())
     val communes by app.repository.observeCommunes().collectAsStateWithLifecycle(initialValue = emptyList())
+    val quartiers by app.repository.observeQuartiers().collectAsStateWithLifecycle(initialValue = emptyList())
 
     var prestataire by remember { mutableStateOf<Prestataire?>(null) }
     var photoPath by remember { mutableStateOf<String?>(null) }
     var description by remember { mutableStateOf("") }
     var metierQuery by remember { mutableStateOf("") }
     var selectedMetier by remember { mutableStateOf<Metier?>(null) }
-    var communeId by remember { mutableStateOf<Long?>(1L) }
+    var quartierQuery by remember { mutableStateOf("") }
     var selectedQuartiers by remember { mutableStateOf(setOf<Long>()) }
+    var primaryPhone by remember { mutableStateOf("") }
+    var extraPhones by remember { mutableStateOf(emptyList<PhoneDraft>()) }
     var dispo by remember { mutableStateOf(true) }
     var tarifs by remember { mutableStateOf(listOf(TarifDraft("Déplacement", "5000"))) }
     var message by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
-
-    val quartiersFlow = remember(communeId) { app.repository.observeQuartiersByCommune(communeId) }
-    val quartiers by quartiersFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
     LaunchedEffect(session?.userId, metiers) {
         val userId = session?.userId ?: return@LaunchedEffect
@@ -199,25 +200,18 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
         prestataire = p
         photoPath = p.photoPath
         description = p.description
-        communeId = p.communeId
+        primaryPhone = p.telephone
         dispo = p.disponibleAujourdhui
         val m = app.repository.getMetier(p.metierId)
         selectedMetier = m
         metierQuery = m?.nom.orEmpty()
+        selectedQuartiers = app.repository.quartiersForPrestataire(p.id).map { it.id }.toSet()
         val detail = app.repository.getDetail(p.id)
         val existing = detail?.tarifs.orEmpty()
         if (existing.isNotEmpty()) {
             tarifs = existing.map { TarifDraft(it.libelle, it.montantAr.toString()) }
         }
-    }
-
-    LaunchedEffect(quartiers, prestataire) {
-        val p = prestataire ?: return@LaunchedEffect
-        if (quartiers.isEmpty()) return@LaunchedEffect
-        val detail = app.repository.getDetail(p.id)
-        selectedQuartiers = detail?.quartiers?.mapNotNull { name ->
-            quartiers.find { it.nom == name }?.id
-        }?.toSet() ?: selectedQuartiers
+        extraPhones = detail?.telephonesSupplementaires.orEmpty().map { PhoneDraft(it) }
     }
 
     val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -247,7 +241,7 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                "Ces informations sont visibles par les habitants. Tapez un métier : des suggestions apparaissent. S’il n’existe pas, proposez-le.",
+                "Ces informations sont visibles par les habitants. Tapez un métier ou un quartier : des suggestions apparaissent.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -282,6 +276,59 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
+            SectionLabel("Téléphones")
+            OutlinedTextField(
+                value = primaryPhone,
+                onValueChange = { primaryPhone = it.filter { c -> c.isDigit() || c == '+' || c == ' ' } },
+                label = { Text("Numéro principal") },
+                placeholder = { Text("Ex. 0341234567") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            )
+            Text(
+                "Contact public et connexion à l’app. Si vous le changez, utilisez ce nouveau numéro pour vous connecter.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            extraPhones.forEachIndexed { index, phone ->
+                if (index > 0) Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = phone.numero,
+                        onValueChange = { value ->
+                            extraPhones = extraPhones.mapIndexed { i, item ->
+                                if (i == index) item.copy(numero = value.filter { c -> c.isDigit() || c == '+' || c == ' ' }) else item
+                            }
+                        },
+                        label = { Text("Autre numéro") },
+                        placeholder = { Text("Ex. 0329876543") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    )
+                    IconButton(onClick = { extraPhones = extraPhones.filterIndexed { i, _ -> i != index } }) {
+                        Icon(Icons.Outlined.Delete, contentDescription = "Retirer ce numéro")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { extraPhones = extraPhones + PhoneDraft("") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ajouter un numéro")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             MetierSearchField(
                 query = metierQuery,
                 onQueryChange = { metierQuery = it },
@@ -308,23 +355,14 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                 helper = "Exemple : Plombier, Coiffeur, Mécanicien auto…"
             )
             Spacer(modifier = Modifier.height(10.dp))
-            DropdownField(
-                label = "Commune",
-                options = communes.map { it.nom to it.id },
-                selectedId = communeId,
-                onSelect = {
-                    communeId = it
-                    selectedQuartiers = emptySet()
-                }
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            MultiSelectDropdown(
-                label = "Quartiers / fokontany",
-                options = quartiers.map { it.nom to it.id },
+            QuartierMultiSearchField(
+                query = quartierQuery,
+                onQueryChange = { quartierQuery = it },
+                quartiers = quartiers,
+                communes = communes,
                 selectedIds = selectedQuartiers,
                 onChange = { selectedQuartiers = it },
-                placeholder = if (quartiers.isEmpty()) "Choisissez d’abord une commune" else "Sélectionner plusieurs quartiers",
-                emptyText = "Choisissez d’abord une commune."
+                helper = "Tapez un quartier, choisissez-le, puis recommencez pour en ajouter d’autres."
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
@@ -417,10 +455,11 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                             ?: app.repository.resolveOrProposeMetier(metierQuery, uid)
                         metierResult.onSuccess { metier ->
                             selectedMetier = metier
-                            app.repository.saveProviderProfile(
+                            val saveResult = app.repository.saveProviderProfile(
+                                userId = uid,
                                 prestataire = current.copy(
                                     metierId = metier.id,
-                                    communeId = communeId ?: current.communeId,
+                                    telephone = primaryPhone,
                                     description = description.trim(),
                                     disponibleAujourdhui = dispo,
                                     photoPath = photoPath
@@ -428,12 +467,24 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                                 quartierIds = selectedQuartiers.toList(),
                                 tarifs = tarifs
                                     .filter { it.libelle.isNotBlank() }
-                                    .map { it.libelle.trim() to (it.montant.toIntOrNull() ?: 0) }
+                                    .map { it.libelle.trim() to (it.montant.toIntOrNull() ?: 0) },
+                                telephonesSupplementaires = extraPhones
+                                    .map { it.numero.trim() }
+                                    .filter { it.isNotBlank() }
                             )
-                            error = null
-                            message = "Fiche enregistrée."
-                            prestataire = app.repository.getPrestataireForUser(uid)
-                            photoPath = prestataire?.photoPath
+                            saveResult.onSuccess {
+                                error = null
+                                message = "Fiche enregistrée."
+                                prestataire = app.repository.getPrestataireForUser(uid)
+                                photoPath = prestataire?.photoPath
+                                primaryPhone = prestataire?.telephone.orEmpty()
+                                extraPhones = app.repository.getDetail(prestataire!!.id)
+                                    ?.telephonesSupplementaires.orEmpty()
+                                    .map { PhoneDraft(it) }
+                            }.onFailure {
+                                error = it.message
+                                message = null
+                            }
                         }.onFailure {
                             error = it.message
                             message = null
@@ -455,10 +506,9 @@ fun CertificationScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val app = context.applicationContext.annuaireApp
     val session by app.sessionStore.session.collectAsStateWithLifecycle(initialValue = null)
-    val communes by app.repository.observeCommunes().collectAsStateWithLifecycle(initialValue = emptyList())
     val scope = rememberCoroutineScope()
     var prestataire by remember { mutableStateOf<Prestataire?>(null) }
-    var communeId by remember { mutableStateOf<Long?>(1L) }
+    var assignedCommune by remember { mutableStateOf<Commune?>(null) }
     var cin by remember { mutableStateOf("") }
     var recto by remember { mutableStateOf<String?>(null) }
     var verso by remember { mutableStateOf<String?>(null) }
@@ -468,9 +518,9 @@ fun CertificationScreen(onBack: () -> Unit) {
     LaunchedEffect(session?.userId) {
         prestataire = session?.userId?.let { app.repository.getPrestataireForUser(it) }
         cin = prestataire?.cinNumero.orEmpty()
-        communeId = prestataire?.communeId ?: 1L
         recto = prestataire?.cinRectoPath
         verso = prestataire?.cinVersoPath
+        assignedCommune = prestataire?.id?.let { app.repository.communeForPrestataire(it) }
     }
 
     val pickRecto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -514,12 +564,18 @@ fun CertificationScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(12.dp))
-            DropdownField(
-                label = "Commune de vérification",
-                options = communes.map { it.nom to it.id },
-                selectedId = communeId,
-                onSelect = { communeId = it }
-            )
+            if (assignedCommune != null) {
+                HintCard(
+                    title = "Commune de vérification",
+                    body = "Votre dossier sera envoyé à ${assignedCommune!!.nom}, d’après vos quartiers d’intervention."
+                )
+            } else {
+                Text(
+                    "Ajoutez d’abord vos quartiers dans Ma fiche : la commune correspondante sera alors assignée ici.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = cin,
@@ -544,13 +600,15 @@ fun CertificationScreen(onBack: () -> Unit) {
             Button(
                 onClick = {
                     val id = prestataire?.id ?: return@Button
-                    val cId = communeId ?: return@Button
                     scope.launch {
-                        val result = app.repository.requestCertification(id, cId, cin, recto, verso)
+                        val result = app.repository.requestCertification(id, cin, recto, verso)
                         result.onSuccess {
-                            message = "Dossier envoyé. La commune va examiner votre CIN."
+                            message = assignedCommune?.nom?.let {
+                                "Dossier envoyé à $it. La commune va examiner votre CIN."
+                            } ?: "Dossier envoyé. La commune va examiner votre CIN."
                             error = null
                             prestataire = app.repository.getPrestataireForUser(session!!.userId)
+                            assignedCommune = prestataire?.id?.let { app.repository.communeForPrestataire(it) }
                         }.onFailure {
                             error = it.message
                             message = null

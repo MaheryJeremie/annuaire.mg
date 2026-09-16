@@ -78,6 +78,13 @@ data class Tarif(
     val montantAr: Int
 )
 
+@Entity(tableName = "prestataire_telephones")
+data class PrestataireTelephone(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val prestataireId: Long,
+    val numero: String
+)
+
 data class PrestataireListItem(
     val id: Long,
     val nom: String,
@@ -101,5 +108,6 @@ data class PrestataireDetail(
     val communeNom: String,
     val quartiers: List<String>,
     val tarifs: List<Tarif>,
+    val telephonesSupplementaires: List<String> = emptyList(),
     val avis: List<Avis> = emptyList()
 )

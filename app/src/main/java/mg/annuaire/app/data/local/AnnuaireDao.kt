@@ -12,6 +12,7 @@ import mg.annuaire.app.data.model.Commune
 import mg.annuaire.app.data.model.Metier
 import mg.annuaire.app.data.model.Prestataire
 import mg.annuaire.app.data.model.PrestataireQuartier
+import mg.annuaire.app.data.model.PrestataireTelephone
 import mg.annuaire.app.data.model.Quartier
 import mg.annuaire.app.data.model.Tarif
 import mg.annuaire.app.data.model.User
@@ -44,10 +45,16 @@ interface AnnuaireDao {
     suspend fun insertTarifs(items: List<Tarif>)
 
     @Insert
+    suspend fun insertPrestataireTelephones(items: List<PrestataireTelephone>)
+
+    @Insert
     suspend fun insertUser(user: User): Long
 
     @Update
     suspend fun updatePrestataire(prestataire: Prestataire)
+
+    @Update
+    suspend fun updateUser(user: User)
 
     @Update
     suspend fun updateMetier(metier: Metier)
@@ -128,14 +135,33 @@ interface AnnuaireDao {
     )
     suspend fun quartierNamesFor(prestataireId: Long): List<String>
 
+    @Query(
+        """
+        SELECT q.* FROM quartiers q
+        INNER JOIN prestataire_quartiers pq ON pq.quartierId = q.id
+        WHERE pq.prestataireId = :prestataireId
+        ORDER BY q.nom
+        """
+    )
+    suspend fun quartiersFor(prestataireId: Long): List<Quartier>
+
+    @Query("SELECT * FROM quartiers WHERE id IN (:ids)")
+    suspend fun findQuartiersByIds(ids: List<Long>): List<Quartier>
+
     @Query("SELECT * FROM tarifs WHERE prestataireId = :prestataireId ORDER BY montantAr")
     suspend fun tarifsFor(prestataireId: Long): List<Tarif>
 
     @Query("DELETE FROM tarifs WHERE prestataireId = :prestataireId")
     suspend fun clearTarifs(prestataireId: Long)
 
+    @Query("DELETE FROM prestataire_telephones WHERE prestataireId = :prestataireId")
+    suspend fun clearTelephones(prestataireId: Long)
+
     @Query("DELETE FROM prestataire_quartiers WHERE prestataireId = :prestataireId")
     suspend fun clearQuartiers(prestataireId: Long)
+
+    @Query("SELECT numero FROM prestataire_telephones WHERE prestataireId = :prestataireId ORDER BY id")
+    suspend fun telephonesFor(prestataireId: Long): List<String>
 
     @Query("SELECT * FROM prestataires WHERE certificationStatus = 'PENDING' ORDER BY id DESC")
     fun observePendingPrestataires(): Flow<List<Prestataire>>
