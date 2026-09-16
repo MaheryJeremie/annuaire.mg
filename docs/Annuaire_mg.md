@@ -66,6 +66,7 @@ Ce n’est pas une marketplace privée type Facebook : c’est un **registre à 
 1. **Compte** → se connecter ou créer un compte  
 2. Complète la fiche :
    - photo de profil
+   - **téléphone principal** (modifiable ; sert aussi à la connexion) et **autres numéros** si besoin
    - métier (suggestions, ou proposition à la commune)
    - **quartiers** : champ libre avec autocomplétion, **plusieurs possibles**
    - **tarifs** : autant de lignes que besoin (nom + montant Ar) ;
@@ -134,6 +135,7 @@ L’outil commune (login, listes CIN / métiers, valider / refuser) est une **au
 | Champ | Comportement |
 |-------|----------------|
 | Photo | Publique, distincte du CIN |
+| Téléphones | **Principal** modifiable (connexion + contact public) ; **+** pour ajouter d’autres numéros |
 | Métier | Champ avec suggestions ; proposition si le nom n’existe pas |
 | Quartiers | Champ libre + autocomplétion, **plusieurs** ; puces des quartiers choisis |
 | Commune | **Pas choisie** par le prestataire. Assignée à l’envoi du CIN, d’après les quartiers, et seulement indiquée |
@@ -187,6 +189,7 @@ La commune web ne remplace pas ces notions : elle évite un troisième rôle dan
 | `Commune` / `Quartier` | Géographie (filtre visiteur = quartier, pas commune) |
 | `Prestataire` | Fiche, CIN, `certificationStatus` |
 | `Tarif` | Plusieurs par prestataire : libellé + Ariary |
+| `PrestataireTelephone` | Numéros supplémentaires (le principal reste sur `Prestataire.telephone`) |
 | `Avis` | Note 1–5 |
 | `User` | Prestataire uniquement dans l’app |
 

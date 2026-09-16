@@ -306,6 +306,7 @@ Formulaire public.
 | Champ | Comportement |
 |-------|----------------|
 | Photo de profil | Publique, distincte du CIN |
+| Téléphones | Principal modifiable (connexion + contact) ; bouton **+** pour d’autres numéros |
 | Métier | Suggestions ; si le nom n’existe pas, proposition à la commune (`PENDING`) |
 | Quartiers | Champ libre + autocomplétion, **plusieurs** ; puces des quartiers choisis |
 | Commune | Absente de ce formulaire. Assignée à l’envoi du CIN d’après les quartiers |
@@ -443,6 +444,7 @@ Prestataire 1 ── * Avis
 | `Prestataire` | Fiche, CIN, `certificationStatus` |
 | `PrestataireQuartier` | Table de liaison (plusieurs quartiers) |
 | `Tarif` | Plusieurs lignes : libellé + `montantAr` |
+| `PrestataireTelephone` | Numéros supplémentaires du prestataire |
 | `Avis` | Note 1–5 + commentaire |
 
 Statuts de certification : `NONE`, `PENDING`, `CERTIFIED`, `REJECTED`.  
