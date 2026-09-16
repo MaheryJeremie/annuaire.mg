@@ -9,6 +9,7 @@ import mg.annuaire.app.data.model.Commune
 import mg.annuaire.app.data.model.Metier
 import mg.annuaire.app.data.model.Prestataire
 import mg.annuaire.app.data.model.PrestataireQuartier
+import mg.annuaire.app.data.model.PrestataireTelephone
 import mg.annuaire.app.data.model.Quartier
 import mg.annuaire.app.data.model.Tarif
 import mg.annuaire.app.data.model.User
@@ -22,9 +23,10 @@ import mg.annuaire.app.data.model.User
         Prestataire::class,
         PrestataireQuartier::class,
         Tarif::class,
+        PrestataireTelephone::class,
         Avis::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AnnuaireDatabase : RoomDatabase() {

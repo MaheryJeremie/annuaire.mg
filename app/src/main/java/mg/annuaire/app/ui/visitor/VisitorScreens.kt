@@ -339,7 +339,13 @@ fun DetailScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            SectionLabel("Contact")
+            Text("Principal : ${p.telephone}", fontWeight = FontWeight.SemiBold)
+            detail!!.telephonesSupplementaires.forEach { numero ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("Autre : $numero", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = {
@@ -366,6 +372,20 @@ fun DetailScreen(
                     Icon(Icons.Default.Sms, contentDescription = null)
                     Spacer(modifier = Modifier.padding(4.dp))
                     Text("SMS")
+                }
+            }
+            detail!!.telephonesSupplementaires.forEach { numero ->
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$numero")))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = null)
+                    Spacer(modifier = Modifier.padding(4.dp))
+                    Text("Appeler $numero")
                 }
             }
 

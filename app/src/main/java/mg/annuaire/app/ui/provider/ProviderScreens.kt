@@ -132,7 +132,7 @@ fun ProviderHomeScreen(
                 title = "3 étapes pour être visible et de confiance",
                 body = "Fiche complète → photos CIN → validation commune."
             )
-            StepRow("1", "Ma fiche", "Photo, métier, quartiers, tarifs, disponibilité.")
+            StepRow("1", "Ma fiche", "Photo, téléphones, métier, quartiers, tarifs, disponibilité.")
             Button(onClick = onEditProfile, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                 Text("Compléter / modifier ma fiche")
             }
@@ -167,6 +167,7 @@ fun ProviderHomeScreen(
 }
 
 private data class TarifDraft(val libelle: String, val montant: String)
+private data class PhoneDraft(val numero: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,6 +187,8 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
     var selectedMetier by remember { mutableStateOf<Metier?>(null) }
     var quartierQuery by remember { mutableStateOf("") }
     var selectedQuartiers by remember { mutableStateOf(setOf<Long>()) }
+    var primaryPhone by remember { mutableStateOf("") }
+    var extraPhones by remember { mutableStateOf(emptyList<PhoneDraft>()) }
     var dispo by remember { mutableStateOf(true) }
     var tarifs by remember { mutableStateOf(listOf(TarifDraft("Déplacement", "5000"))) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -197,6 +200,7 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
         prestataire = p
         photoPath = p.photoPath
         description = p.description
+        primaryPhone = p.telephone
         dispo = p.disponibleAujourdhui
         val m = app.repository.getMetier(p.metierId)
         selectedMetier = m
@@ -207,6 +211,7 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
         if (existing.isNotEmpty()) {
             tarifs = existing.map { TarifDraft(it.libelle, it.montantAr.toString()) }
         }
+        extraPhones = detail?.telephonesSupplementaires.orEmpty().map { PhoneDraft(it) }
     }
 
     val pickPhoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -269,6 +274,59 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(if (photoPath.isNullOrBlank()) "Ajouter une photo" else "Changer la photo")
                 }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            SectionLabel("Téléphones")
+            OutlinedTextField(
+                value = primaryPhone,
+                onValueChange = { primaryPhone = it.filter { c -> c.isDigit() || c == '+' || c == ' ' } },
+                label = { Text("Numéro principal") },
+                placeholder = { Text("Ex. 0341234567") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+            )
+            Text(
+                "Contact public et connexion à l’app. Si vous le changez, utilisez ce nouveau numéro pour vous connecter.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            extraPhones.forEachIndexed { index, phone ->
+                if (index > 0) Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = phone.numero,
+                        onValueChange = { value ->
+                            extraPhones = extraPhones.mapIndexed { i, item ->
+                                if (i == index) item.copy(numero = value.filter { c -> c.isDigit() || c == '+' || c == ' ' }) else item
+                            }
+                        },
+                        label = { Text("Autre numéro") },
+                        placeholder = { Text("Ex. 0329876543") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(16.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                    )
+                    IconButton(onClick = { extraPhones = extraPhones.filterIndexed { i, _ -> i != index } }) {
+                        Icon(Icons.Outlined.Delete, contentDescription = "Retirer ce numéro")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { extraPhones = extraPhones + PhoneDraft("") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ajouter un numéro")
             }
             Spacer(modifier = Modifier.height(12.dp))
             MetierSearchField(
@@ -397,9 +455,11 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                             ?: app.repository.resolveOrProposeMetier(metierQuery, uid)
                         metierResult.onSuccess { metier ->
                             selectedMetier = metier
-                            app.repository.saveProviderProfile(
+                            val saveResult = app.repository.saveProviderProfile(
+                                userId = uid,
                                 prestataire = current.copy(
                                     metierId = metier.id,
+                                    telephone = primaryPhone,
                                     description = description.trim(),
                                     disponibleAujourdhui = dispo,
                                     photoPath = photoPath
@@ -407,12 +467,24 @@ fun ProviderProfileScreen(onBack: () -> Unit) {
                                 quartierIds = selectedQuartiers.toList(),
                                 tarifs = tarifs
                                     .filter { it.libelle.isNotBlank() }
-                                    .map { it.libelle.trim() to (it.montant.toIntOrNull() ?: 0) }
+                                    .map { it.libelle.trim() to (it.montant.toIntOrNull() ?: 0) },
+                                telephonesSupplementaires = extraPhones
+                                    .map { it.numero.trim() }
+                                    .filter { it.isNotBlank() }
                             )
-                            error = null
-                            message = "Fiche enregistrée."
-                            prestataire = app.repository.getPrestataireForUser(uid)
-                            photoPath = prestataire?.photoPath
+                            saveResult.onSuccess {
+                                error = null
+                                message = "Fiche enregistrée."
+                                prestataire = app.repository.getPrestataireForUser(uid)
+                                photoPath = prestataire?.photoPath
+                                primaryPhone = prestataire?.telephone.orEmpty()
+                                extraPhones = app.repository.getDetail(prestataire!!.id)
+                                    ?.telephonesSupplementaires.orEmpty()
+                                    .map { PhoneDraft(it) }
+                            }.onFailure {
+                                error = it.message
+                                message = null
+                            }
                         }.onFailure {
                             error = it.message
                             message = null
