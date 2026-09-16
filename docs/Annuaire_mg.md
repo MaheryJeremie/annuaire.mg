@@ -66,13 +66,13 @@ Ce n’est pas une marketplace privée type Facebook : c’est un **registre à 
 1. **Compte** → se connecter ou créer un compte  
 2. Complète la fiche :
    - photo de profil
+   - **téléphone principal** (modifiable ; sert aussi à la connexion) et **autres numéros** si besoin
    - métier (suggestions, ou proposition à la commune)
-   - commune
-   - **quartiers en sélection multiple** (menu déroulant, pas une longue liste de puces)
+   - **quartiers** : champ libre avec autocomplétion, **plusieurs possibles**
    - **tarifs** : autant de lignes que besoin (nom + montant Ar) ;
    - disponibilité du jour
 3. Si le métier n’existe pas : il le propose ; la commune valide le nom
-4. Envoie le **CIN** (numéro + recto + verso)
+4. Envoie le **CIN** (numéro + recto + verso). Il **ne choisit pas** la commune : elle est **assignée** d’après ses quartiers et **indiquée** à l’écran.
 5. Le badge **Certifié** apparaît après décision de la commune **et** une sync 
 
 ### Commune (application web séparée)
@@ -108,7 +108,7 @@ Les visiteurs ne voient que le badge **Certifié**. Les photos CIN ne sont pas p
 ### Inclus
 - Recherche liste-first, métier + quartier, certifiés, dispo ; **tirer vers le bas** pour actualiser
 - Fiche publique : tarifs, avis, appel / SMS (Intents)
-- Espace prestataire : photo, métier, **quartiers multi-select**, **plusieurs tarifs**, CIN
+- Espace prestataire : photo, métier, **quartiers (saisie + suggestions, plusieurs)**, **plusieurs tarifs**, CIN (commune assignée automatiquement)
 - Proposition de métier
 - Offline-first Room ; sync catalogue selon le réglage **Compte** (Wi‑Fi par défaut)
 - Back-office commune HTML + Firebase (`dossiers`, `metiers_proposes`)
@@ -135,9 +135,10 @@ L’outil commune (login, listes CIN / métiers, valider / refuser) est une **au
 | Champ | Comportement |
 |-------|----------------|
 | Photo | Publique, distincte du CIN |
+| Téléphones | **Principal** modifiable (connexion + contact public) ; **+** pour ajouter d’autres numéros |
 | Métier | Champ avec suggestions ; proposition si le nom n’existe pas |
-| Commune | Liste déroulante simple |
-| Quartiers | **Select multiple** : un menu, cases à cocher, puces uniquement pour les quartiers choisis |
+| Quartiers | Champ libre + autocomplétion, **plusieurs** ; puces des quartiers choisis |
+| Commune | **Pas choisie** par le prestataire. Assignée à l’envoi du CIN, d’après les quartiers, et seulement indiquée |
 | Tarifs | Une ou plusieurs lignes **nom + montant (Ar)** ; bouton **+ / Ajouter un tarif** ; une ligne se retire si ce n’est pas la dernière |
 | Dispo | Interrupteur « Disponible aujourd’hui » |
 
@@ -188,6 +189,7 @@ La commune web ne remplace pas ces notions : elle évite un troisième rôle dan
 | `Commune` / `Quartier` | Géographie (filtre visiteur = quartier, pas commune) |
 | `Prestataire` | Fiche, CIN, `certificationStatus` |
 | `Tarif` | Plusieurs par prestataire : libellé + Ariary |
+| `PrestataireTelephone` | Numéros supplémentaires (le principal reste sur `Prestataire.telephone`) |
 | `Avis` | Note 1–5 |
 | `User` | Prestataire uniquement dans l’app |
 
@@ -236,8 +238,9 @@ Branches habituelles : travail sur `feat/…` → PR vers `dev` → si OK, PR ve
 5. Stack Kotlin / Compose / MVVM / Room ; sync Wi‑Fi par défaut, réglable  
 6. Badge visiteur = uniquement **Certifié**  
 7. Photos CIN en ligne pour la commune seulement ; photo de profil sur la fiche publique  
-8. Quartiers prestataire = **sélection multiple compacte**  
-9. Tarifs prestataire = **plusieurs lignes**, ajout par bouton **+**
+8. Quartiers prestataire = **saisie libre + autocomplétion**, plusieurs possibles  
+9. Tarifs prestataire = **plusieurs lignes**, ajout par bouton **+**  
+10. Commune du prestataire = **assignée à la demande de validation**, d’après les quartiers, pas choisie à la main
 
 ---
 

@@ -1,14 +1,22 @@
 package mg.annuaire.app.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -20,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import mg.annuaire.app.data.model.Commune
 import mg.annuaire.app.data.model.Metier
 import mg.annuaire.app.data.model.MetierStatus
+import mg.annuaire.app.data.model.Quartier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,6 +152,100 @@ fun FilterSuggestionField(
                         expanded = false
                     }
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun QuartierMultiSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    quartiers: List<Quartier>,
+    communes: List<Commune>,
+    selectedIds: Set<Long>,
+    onChange: (Set<Long>) -> Unit,
+    helper: String? = null
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val nameCount = remember(quartiers) {
+        quartiers.groupingBy { it.nom.lowercase() }.eachCount()
+    }
+    fun labelFor(quartier: Quartier): String {
+        val extra = if ((nameCount[quartier.nom.lowercase()] ?: 0) > 1) {
+            communes.find { it.id == quartier.communeId }?.nom?.let { " · $it" }.orEmpty()
+        } else ""
+        return quartier.nom + extra
+    }
+    val suggestions = remember(query, quartiers, selectedIds) {
+        val q = query.trim()
+        val remaining = quartiers.filter { it.id !in selectedIds }
+        val list = if (q.isEmpty()) remaining else remaining.filter { it.nom.contains(q, ignoreCase = true) }
+        list.take(10)
+    }
+    val selected = quartiers.filter { it.id in selectedIds }
+
+    Column {
+        ExposedDropdownMenuBox(
+            expanded = expanded && suggestions.isNotEmpty(),
+            onExpandedChange = { expanded = it }
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = {
+                    onQueryChange(it)
+                    expanded = true
+                },
+                label = { Text("Quartiers / fokontany") },
+                placeholder = { Text("Ex. Alarobia, Analakely…") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryEditable)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true
+            )
+            ExposedDropdownMenu(
+                expanded = expanded && suggestions.isNotEmpty(),
+                onDismissRequest = { expanded = false }
+            ) {
+                suggestions.forEach { quartier ->
+                    DropdownMenuItem(
+                        text = { Text(labelFor(quartier)) },
+                        onClick = {
+                            onChange(selectedIds + quartier.id)
+                            onQueryChange("")
+                            expanded = true
+                        }
+                    )
+                }
+            }
+        }
+        helper?.let {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (selected.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                selected.forEach { quartier ->
+                    InputChip(
+                        selected = true,
+                        onClick = { onChange(selectedIds - quartier.id) },
+                        label = { Text(labelFor(quartier)) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Outlined.Close,
+                                contentDescription = "Retirer ${quartier.nom}",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    )
+                }
             }
         }
     }

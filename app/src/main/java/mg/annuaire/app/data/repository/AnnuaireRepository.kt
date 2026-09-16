@@ -11,6 +11,7 @@ import mg.annuaire.app.data.model.Prestataire
 import mg.annuaire.app.data.model.PrestataireDetail
 import mg.annuaire.app.data.model.PrestataireListItem
 import mg.annuaire.app.data.model.PrestataireQuartier
+import mg.annuaire.app.data.model.PrestataireTelephone
 import mg.annuaire.app.data.model.Quartier
 import mg.annuaire.app.data.model.Tarif
 import mg.annuaire.app.data.model.User
@@ -59,6 +60,7 @@ class AnnuaireRepository(
             communeNom = dao.communeName(p.communeId).orEmpty(),
             quartiers = dao.quartierNamesFor(prestataireId),
             tarifs = dao.tarifsFor(prestataireId),
+            telephonesSupplementaires = dao.telephonesFor(prestataireId),
             avis = dao.avisFor(prestataireId)
         )
     }
@@ -67,13 +69,15 @@ class AnnuaireRepository(
         if (nom.trim().length < 2) {
             return Result.failure(IllegalStateException("Indiquez votre nom."))
         }
-        if (telephone.trim().length < 8) {
-            return Result.failure(IllegalStateException("Numéro de téléphone invalide."))
+        val phoneResult = normalizePhone(telephone)
+        if (phoneResult.isFailure) {
+            return Result.failure(phoneResult.exceptionOrNull()!!)
         }
+        val cleanPhone = phoneResult.getOrThrow()
         if (password.length < 4) {
             return Result.failure(IllegalStateException("Mot de passe trop court."))
         }
-        if (dao.findUserByPhone(telephone) != null) {
+        if (dao.findUserByPhone(cleanPhone) != null) {
             return Result.failure(IllegalStateException("Ce téléphone est déjà utilisé."))
         }
         val defaultMetierId = dao.firstApprovedMetier()?.id
@@ -81,7 +85,7 @@ class AnnuaireRepository(
         val userId = dao.insertUser(
             User(
                 nom = nom.trim(),
-                telephone = telephone.trim(),
+                telephone = cleanPhone,
                 password = password,
                 role = UserRole.PROVIDER.name,
                 communeId = 1L
@@ -91,7 +95,7 @@ class AnnuaireRepository(
             Prestataire(
                 userId = userId,
                 nom = nom.trim(),
-                telephone = telephone.trim(),
+                telephone = cleanPhone,
                 metierId = defaultMetierId,
                 communeId = 1L,
                 description = "",
@@ -102,7 +106,9 @@ class AnnuaireRepository(
     }
 
     suspend fun login(telephone: String, password: String): Result<User> {
-        val user = dao.findUserByPhone(telephone.trim())
+        val cleanPhone = normalizePhone(telephone).getOrNull()
+            ?: return Result.failure(IllegalStateException("Numéro de téléphone invalide."))
+        val user = dao.findUserByPhone(cleanPhone)
             ?: return Result.failure(IllegalStateException("Compte introuvable."))
         if (user.password != password) {
             return Result.failure(IllegalStateException("Mot de passe incorrect."))
@@ -120,13 +126,65 @@ class AnnuaireRepository(
 
     suspend fun getMetier(id: Long): Metier? = dao.findMetierById(id)
 
+    suspend fun quartiersForPrestataire(prestataireId: Long): List<Quartier> =
+        dao.quartiersFor(prestataireId)
+
+    suspend fun communeFromQuartierIds(quartierIds: Collection<Long>): Commune? {
+        if (quartierIds.isEmpty()) return null
+        val selected = dao.findQuartiersByIds(quartierIds.toList())
+        val communeId = dominantCommuneId(selected) ?: return null
+        return dao.findCommune(communeId)
+    }
+
+    suspend fun communeForPrestataire(prestataireId: Long): Commune? {
+        val selected = dao.quartiersFor(prestataireId)
+        val communeId = dominantCommuneId(selected) ?: return null
+        return dao.findCommune(communeId)
+    }
+
+    private fun dominantCommuneId(quartiers: List<Quartier>): Long? =
+        quartiers.groupingBy { it.communeId }.eachCount().maxByOrNull { it.value }?.key
+
     suspend fun saveProviderProfile(
+        userId: Long,
         prestataire: Prestataire,
         quartierIds: List<Long>,
-        tarifs: List<Pair<String, Int>>
-    ) {
+        tarifs: List<Pair<String, Int>>,
+        telephonesSupplementaires: List<String>
+    ): Result<Unit> {
+        val phoneResult = normalizePhone(prestataire.telephone)
+        if (phoneResult.isFailure) {
+            return Result.failure(phoneResult.exceptionOrNull()!!)
+        }
+        val primaryPhone = phoneResult.getOrThrow()
+        val user = dao.findUserById(userId)
+            ?: return Result.failure(IllegalStateException("Compte introuvable."))
+        if (primaryPhone != user.telephone) {
+            val taken = dao.findUserByPhone(primaryPhone)
+            if (taken != null && taken.id != userId) {
+                return Result.failure(IllegalStateException("Ce numéro est déjà utilisé par un autre compte."))
+            }
+            dao.updateUser(user.copy(telephone = primaryPhone))
+        }
+
+        val extraPhones = telephonesSupplementaires
+            .mapNotNull { normalizePhone(it).getOrNull() }
+            .filter { it != primaryPhone }
+            .distinct()
+
         val remotePhoto = photoCdn.publishProfilePhoto(prestataire.id, prestataire.photoPath)
-        dao.updatePrestataire(prestataire.copy(photoPath = remotePhoto ?: prestataire.photoPath))
+        val inferredCommuneId = if (quartierIds.isEmpty()) {
+            prestataire.communeId
+        } else {
+            dominantCommuneId(dao.findQuartiersByIds(quartierIds)) ?: prestataire.communeId
+        }
+        dao.updatePrestataire(
+            prestataire.copy(
+                telephone = primaryPhone,
+                photoPath = remotePhoto ?: prestataire.photoPath,
+                communeId = inferredCommuneId
+            )
+        )
         dao.clearQuartiers(prestataire.id)
         dao.insertPrestataireQuartiers(
             quartierIds.map { PrestataireQuartier(prestataire.id, it) }
@@ -137,6 +195,21 @@ class AnnuaireRepository(
                 Tarif(prestataireId = prestataire.id, libelle = it.first, montantAr = it.second)
             }
         )
+        dao.clearTelephones(prestataire.id)
+        if (extraPhones.isNotEmpty()) {
+            dao.insertPrestataireTelephones(
+                extraPhones.map { PrestataireTelephone(prestataireId = prestataire.id, numero = it) }
+            )
+        }
+        return Result.success(Unit)
+    }
+
+    private fun normalizePhone(raw: String): Result<String> {
+        val clean = raw.filter { it.isDigit() }
+        if (clean.length < 8) {
+            return Result.failure(IllegalStateException("Numéro de téléphone invalide (8 chiffres minimum)."))
+        }
+        return Result.success(clean)
     }
 
     /**
@@ -179,7 +252,6 @@ class AnnuaireRepository(
 
     suspend fun requestCertification(
         prestataireId: Long,
-        communeId: Long,
         cinNumero: String,
         cinRectoPath: String?,
         cinVersoPath: String?
@@ -189,6 +261,12 @@ class AnnuaireRepository(
         if (p.description.isBlank()) {
             return Result.failure(IllegalStateException("Complétez d'abord votre fiche (description)."))
         }
+        val quartiers = dao.quartiersFor(prestataireId)
+        if (quartiers.isEmpty()) {
+            return Result.failure(IllegalStateException("Ajoutez d'abord les quartiers où vous intervenez."))
+        }
+        val communeId = dominantCommuneId(quartiers)
+            ?: return Result.failure(IllegalStateException("Impossible d’assigner une commune."))
         val cin = cinNumero.trim()
         if (cin.length < 5) {
             return Result.failure(IllegalStateException("Indiquez le numéro de CIN."))
